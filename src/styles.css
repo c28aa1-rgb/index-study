@@ -1,0 +1,226 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/BricolageGrotesque-Bold.ttf') format('truetype');
+  font-weight: 500 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Regular.ttf') format('truetype');
+  font-weight: 400 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('/fonts/InstrumentSans-Bold.ttf') format('truetype');
+  font-weight: 600 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/JetBrainsMono-Regular.ttf') format('truetype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Nothing You Could Do';
+  src: url('/fonts/NothingYouCouldDo-Regular.ttf') format('truetype');
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@theme {
+  --color-desk: #e9edf2;
+  --color-desk-2: #dde3ea;
+  --color-paper: #ffffff;
+  --color-ink: #14213d;
+  --color-ink-2: #3d4a66;
+  --color-ink-3: #6b7690;
+  --color-rule: #9db8e0;
+  --color-rule-soft: #d6e2f3;
+  --color-margin: #e5484d;
+  --color-marker: #f5e663;
+  --color-marker-soft: #fbf5b8;
+  --color-mastered: #2f9e6b;
+  --color-mastered-soft: #d7f0e3;
+
+  --font-display: 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-hand: 'Nothing You Could Do', cursive;
+
+  --shadow-card: 0 1px 0 rgba(20, 33, 61, 0.06), 0 10px 24px -12px rgba(20, 33, 61, 0.28);
+  --shadow-lift: 0 2px 0 rgba(20, 33, 61, 0.05), 0 24px 40px -18px rgba(20, 33, 61, 0.38);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+}
+button,
+a,
+input,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+[role='button'] {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: default;
+}
+p,
+h1,
+h2,
+h3,
+span {
+  overflow-wrap: anywhere;
+}
+input[type='radio'] {
+  accent-color: var(--color-ink);
+}
+
+.study-panel {
+  border-radius: 18px;
+  background: var(--color-paper);
+  padding: clamp(24px, 4vw, 40px);
+  box-shadow: var(--shadow-card);
+}
+.mode-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 1.5px solid var(--color-rule);
+  border-radius: 14px;
+  background: var(--color-rule-soft);
+  font-size: 28px;
+  color: var(--color-ink);
+}
+.button-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: 12px;
+  background: var(--color-ink);
+  color: white;
+  font-weight: 600;
+}
+.button-link.secondary {
+  border: 1.5px solid var(--color-ink);
+  background: white;
+  color: var(--color-ink);
+}
+.button-link:hover {
+  filter: brightness(1.15);
+}
+.desk-heading {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  font-weight: 800;
+  font-family: var(--font-display);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  background: var(--color-desk);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* faint dot grid, like a cutting mat on the desk */
+  background-image: radial-gradient(rgba(20, 33, 61, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+::selection {
+  background: var(--color-marker);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 2.5px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Ruled index card surface: red header line + blue rules */
+.ruled {
+  background-color: var(--color-paper);
+  background-image:
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent var(--head, 56px),
+      var(--color-margin) var(--head, 56px),
+      var(--color-margin) calc(var(--head, 56px) + 1.5px),
+      transparent calc(var(--head, 56px) + 1.5px)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(var(--line, 32px) - 1px),
+      var(--color-rule-soft) calc(var(--line, 32px) - 1px),
+      var(--color-rule-soft) var(--line, 32px)
+    );
+  background-position:
+    0 0,
+    0 calc(var(--head, 56px) + 2px);
+}
+
+.marker {
+  background: linear-gradient(transparent 55%, var(--color-marker) 55%, var(--color-marker) 92%, transparent 92%);
+  padding: 0 0.1em;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.field {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--color-ink);
+  padding: 6px 2px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.field:focus {
+  border-bottom-color: var(--color-margin);
+}
+.field::placeholder {
+  color: var(--color-ink-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
