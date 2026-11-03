@@ -11,10 +11,12 @@ Applied `create_study_sets_and_progress` to the hosted database. Both app tables
 Authentication settings:
 
 - Email sign-up/sign-in is disabled. Google is the only planned sign-in provider; no local or password entry is offered.
-- Site URL is `http://127.0.0.1:4173/`.
-- Allowed redirects are exactly `http://127.0.0.1:4173/` and `http://127.0.0.1:5173/`.
+- Production Site URL is `https://c28aa1-rgb.github.io/dalton-index/`.
+- Allowed redirects are exactly `https://c28aa1-rgb.github.io/dalton-index/`, `http://127.0.0.1:4173/`, and `http://127.0.0.1:5173/`.
 - Google is enabled using the OAuth client credentials supplied through the Supabase dashboard. The public Auth settings endpoint confirms Google enabled and email disabled. A live browser check reached Google’s account chooser; completing the user’s consent and callback remains a user sign-in step.
 
 The Google client must retain callback URL `https://wvaouepnnlqlxftrvjpf.supabase.co/auth/v1/callback`. Client credentials are managed in [Supabase’s Google provider settings](https://supabase.com/dashboard/project/wvaouepnnlqlxftrvjpf/auth/providers?provider=Google). Keep the secret in Supabase. The app checks provider availability and enables the Google button when the provider is available. Google profile names are used automatically.
 
-When deploying, add the deployed app URL to the redirect allowlist, update Site URL, and provide the publishable URL/key as repository Actions variables. No GitHub repository or public deployment has been created.
+Repository: [c28aa1-rgb/dalton-index](https://github.com/c28aa1-rgb/dalton-index). GitHub Pages deploys the `main` branch through the Deploy Dalton Index workflow. The Supabase URL and publishable key are repository Actions variables; private credentials are excluded from Git.
+
+Firebase inspection confirmed this app has no Firebase configuration, SDK, or Firestore dependency. No Firebase project or Firestore rules were changed because the app uses Supabase for authentication and study data.

@@ -1,5 +1,7 @@
 # Dalton Index
 
+[Open the app](https://c28aa1-rgb.github.io/dalton-index/) · [Source on GitHub](https://github.com/c28aa1-rgb/dalton-index)
+
 A Dalton-themed study app built with React, TypeScript, Vite, Tailwind CSS, and Framer Motion.
 
 Create and edit sets, reorder cards, import pasted notes or CSV/TXT/TSV files, and share sets. Study with flashcards, adaptive Learn rounds, written/multiple-choice/true-or-false tests, a timed Match game, and spaced review. Study progress persists between visits.
@@ -22,7 +24,7 @@ The first visit opens the Google-only sign-in screen. Email/password sign-in and
 3. Disable the Email auth provider and configure Google as described below. Set the Supabase Auth Site URL to the deployed app URL, including the repository path and trailing slash, such as `https://yourname.github.io/dalton-index/`. Add the local development URL if needed.
 4. Restart Vite and choose **Continue with Google**. No separate password or name form is required.
 
-Local sets remain in browser storage when you turn on Supabase; they are not automatically migrated. Export cards from each set's Share dialog before switching configuration, then import them into the signed-in library. Cloud share links refer to the live set; privacy changes and deletions apply to those links. Public sets appear in Explore; unlisted sets are available to anyone who has their URL. Unlisted is not access-controlled membership.
+Cloud share links refer to the live set; privacy changes and deletions apply to those links. Public sets appear in Explore; unlisted sets are available to anyone who has their URL. Unlisted is not access-controlled membership.
 
 Progress is cached per account in the browser and synced after a short delay. If a sync fails, the app shows a notice; the local copy remains available in that browser. Keep the tab open briefly after answering to let cloud sync finish. Tests and Match timing do not require a server.
 
