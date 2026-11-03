@@ -19,6 +19,6 @@ The Google client must retain callback URL `https://wvaouepnnlqlxftrvjpf.supabas
 
 Repository: [c28aa1-rgb/index-study](https://github.com/c28aa1-rgb/index-study). GitHub Pages deploys the `main` branch through the Deploy Index workflow. The Supabase URL and publishable key are repository Actions variables; private credentials are excluded from Git.
 
-The old [dalton-index repository](https://github.com/c28aa1-rgb/dalton-index) serves only a redirect to `/index-study/`. Its original app history remains in Git. The redirect preserves the query string and hash, including shared-set routes and OAuth return parameters. Its source and deployment workflow are maintained under `deploy/legacy-redirect/` in this repository.
+The old [dalton-index repository](https://github.com/c28aa1-rgb/dalton-index) serves only a redirect to `/index-study/`. The app and its full commit history moved intact to `index-study`. The redirect preserves the query string and hash, including shared-set routes and OAuth return parameters. Its source and deployment workflow are maintained under `deploy/legacy-redirect/` in this repository.
 
 Firebase inspection confirmed this app has no Firebase configuration, SDK, or Firestore dependency. No Firebase project or Firestore rules were changed because the app uses Supabase for authentication and study data.
