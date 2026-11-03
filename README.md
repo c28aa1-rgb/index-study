@@ -1,6 +1,6 @@
 # Index
 
-[Open the app](https://c28aa1-rgb.github.io/dalton-index/) · [Source on GitHub](https://github.com/c28aa1-rgb/dalton-index)
+[Open the app](https://c28aa1-rgb.github.io/index-study/) · [Source on GitHub](https://github.com/c28aa1-rgb/index-study)
 
 A study app built with React, TypeScript, Vite, Tailwind CSS, and Framer Motion.
 

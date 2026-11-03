@@ -11,7 +11,7 @@ beforeEach(() => {
     setItem: (key: string, value: string) => values.set(key, value),
     removeItem: (key: string) => values.delete(key),
   })
-  vi.stubGlobal('location', { origin: 'https://school.github.io', pathname: '/index/' })
+  vi.stubGlobal('location', { origin: 'https://school.github.io', pathname: '/index-study/' })
   google.mockReset()
 })
 afterEach(() => vi.unstubAllGlobals())
@@ -21,7 +21,7 @@ it('starts Google OAuth at the deployment base and preserves the requested set',
   await signInWithGoogle('/set/biology/learn')
   expect(google).toHaveBeenCalledWith({
     provider: 'google',
-    options: { redirectTo: 'https://school.github.io/index/', queryParams: { prompt: 'select_account' } },
+    options: { redirectTo: 'https://school.github.io/index-study/', queryParams: { prompt: 'select_account' } },
   })
   expect(sessionStorage.getItem(AUTH_RETURN_KEY)).toBe('/set/biology/learn')
 })
