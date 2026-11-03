@@ -110,11 +110,13 @@ export function WrittenInput({
   disabled,
   onSkip,
   placeholder = 'Type the answer',
+  submitLabel = 'Answer',
 }: {
   onSubmit: (v: string) => void
   disabled?: boolean
   onSkip?: () => void
   placeholder?: string
+  submitLabel?: string
 }) {
   const [v, setV] = useState('')
   const ref = useRef<HTMLInputElement>(null)
@@ -158,7 +160,7 @@ export function WrittenInput({
           disabled={disabled || !v.trim()}
           className="h-11 rounded-xl bg-ink px-5 font-semibold text-white disabled:opacity-30"
         >
-          Answer
+          {submitLabel}
         </motion.button>
       </div>
     </form>

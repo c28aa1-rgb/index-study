@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getProgress, getSet, saveProgress } from './store'
-import type { ProgressMap, StudySet } from './types'
-import { review, type Rating } from './srs'
+import { getProgress, getSet, getStars, saveProgress, saveStar } from './store'
+import type { Card, CardProgress, ProgressMap, Side, StudySet } from './types'
+import { fresh, review, type Rating } from './srs'
+import { answerMemory, meetsGoal, memoryFor, type LearnGoal, type QuestionKind } from './learn'
 import { useAuth } from './auth'
 import { toast } from '../components/Toast'
 
@@ -9,6 +10,8 @@ export function useSet(id: string | undefined) {
   const { user, ready } = useAuth()
   const [set, setSet] = useState<StudySet | null>(null)
   const [progress, setProgress] = useState<ProgressMap>({})
+  const [starred, setStarred] = useState<string[]>([])
+  const [savingStars, setSavingStars] = useState<string[]>([])
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading')
   const [error, setError] = useState('')
   const progRef = useRef<ProgressMap>({})
@@ -17,12 +20,14 @@ export function useSet(id: string | undefined) {
     if (!id || !ready) return
     let alive = true
     setState('loading')
-    Promise.all([getSet(id), getProgress(id)])
-      .then(([s, p]) => {
+    Promise.all([getSet(id), getProgress(id), getStars(id)])
+      .then(([s, p, stars]) => {
         if (!alive) return
         setSet(s)
         progRef.current = p
         setProgress(p)
+        setStarred(stars)
+        setSavingStars([])
         setState(s ? 'ready' : 'missing')
       })
       .catch((e) => {
@@ -63,7 +68,63 @@ export function useSet(id: string | undefined) {
     persist(map)
   }
 
-  return { set, setSet, progress, rate, reset, restore, state, error }
+  const learnAnswer = (
+    card: Card,
+    side: Side,
+    kind: QuestionKind,
+    correct: boolean,
+    goal: LearnGoal,
+    before?: CardProgress,
+  ) => {
+    const p = before ?? progRef.current[card.id] ?? fresh()
+    const memory = memoryFor(card, p, side)
+    const nextMemory = answerMemory(card, memory, kind, correct)
+    const scheduled = !correct
+      ? review(p, 0)
+      : meetsGoal(nextMemory, goal) && !meetsGoal(memory, goal)
+        ? review(p, 2)
+        : p
+    const next = {
+      ...progRef.current,
+      [card.id]: { ...scheduled, learn: { ...p.learn, [side]: nextMemory } },
+    }
+    progRef.current = next
+    setProgress(next)
+    persist(next)
+    return next
+  }
+
+  const toggleStar = async (cardId: string) => {
+    if (!id || savingStars.includes(cardId)) return
+    const wasStarred = starred.includes(cardId)
+    const update = (value: boolean) =>
+      setStarred((stars) => (value ? [...new Set([...stars, cardId])] : stars.filter((s) => s !== cardId)))
+    setSavingStars((ids) => [...ids, cardId])
+    update(!wasStarred)
+    try {
+      await saveStar(id, cardId, !wasStarred)
+    } catch (e) {
+      update(wasStarred)
+      toast((e as Error).message)
+    } finally {
+      setSavingStars((ids) => ids.filter((s) => s !== cardId))
+    }
+  }
+
+  return {
+    set,
+    setSet,
+    progress,
+    rate,
+    reset,
+    restore,
+    learnAnswer,
+    starred,
+    toggleStar,
+    savingStars,
+    state,
+    error,
+  }
 }
 
 export function useKey(handler: (e: KeyboardEvent) => void, deps: unknown[]) {

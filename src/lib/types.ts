@@ -21,6 +21,18 @@ export type CardProgress = {
   reps: number
   lapses: number
   last: number
+  learn?: Partial<Record<Side, LearnMemory>>
+}
+
+export type LearnMemory = {
+  content: number
+  attempts: number
+  misses: number
+  streak: number
+  writtenStreak: number
+  last: number
+  correct: boolean
+  stability: number // estimated recall half-life in milliseconds
 }
 
 export type ProgressMap = Record<string, CardProgress>

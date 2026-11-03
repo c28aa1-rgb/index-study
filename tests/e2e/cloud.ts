@@ -22,7 +22,7 @@ export async function mockGoogleAccount(
       if (sets) localStorage.setItem('di.sets', JSON.stringify(sets))
       if (signedIn)
         localStorage.setItem(
-          'sb-dalton-test-auth-token',
+          'sb-index-test-auth-token',
           JSON.stringify({
             access_token: 'browser-test-token',
             refresh_token: 'browser-test-refresh',
@@ -35,7 +35,7 @@ export async function mockGoogleAccount(
     },
     { user, signedIn: options.signedIn !== false, sets: options.sets },
   )
-  await page.route('https://dalton-test.supabase.co/**', async (route) => {
+  await page.route('https://index-test.supabase.co/**', async (route) => {
     const request = route.request()
     const url = new URL(request.url())
     if (url.pathname === '/auth/v1/settings')
@@ -49,7 +49,9 @@ export async function mockGoogleAccount(
     const object = request.headers().accept?.includes('vnd.pgrst.object')
     const value = (name: string) => url.searchParams.get(name)?.replace(/^eq\./, '')
     if (url.pathname.endsWith('/study_sets')) {
-      const sets = (await page.evaluate(() => JSON.parse(localStorage.getItem('di.sets') || '[]'))) as StudySet[]
+      const sets = (await page.evaluate(() =>
+        JSON.parse(localStorage.getItem('di.sets') || '[]'),
+      )) as StudySet[]
       if (request.method() === 'POST') {
         const next = request.postDataJSON() as StudySet
         await page.evaluate(
@@ -73,6 +75,19 @@ export async function mockGoogleAccount(
       const data = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) || 'null'), key)
       const rows = data ? [{ data, updated_at: new Date().toISOString() }] : []
       return route.fulfill({ json: object ? (rows[0] ?? null) : rows })
+    }
+    if (url.pathname.endsWith('/study_stars')) {
+      const setId = request.method() === 'POST' ? request.postDataJSON().set_id : value('set_id')
+      const key = `test.stars.${userId}.${setId}`
+      const stars: string[] = await page.evaluate((key) => JSON.parse(localStorage.getItem(key) || '[]'), key)
+      if (request.method() !== 'GET') {
+        const cardId = request.method() === 'POST' ? request.postDataJSON().card_id : value('card_id')
+        const next =
+          request.method() === 'POST' ? [...new Set([...stars, cardId])] : stars.filter((s) => s !== cardId)
+        await page.evaluate(({ key, next }) => localStorage.setItem(key, JSON.stringify(next)), { key, next })
+        return route.fulfill({ status: 204 })
+      }
+      return route.fulfill({ json: stars.map((card_id) => ({ card_id })) })
     }
     return route.fulfill({ status: 404 })
   })

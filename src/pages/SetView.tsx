@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from '../components/Toast'
+import { StarButton } from '../components/StarButton'
 import { BackLink, Button, Empty, MasteryStrip, Modal, Page, Segmented, Spinner } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useSet } from '../lib/hooks'
@@ -104,12 +105,13 @@ export default function SetView() {
   const { id } = useParams()
   const nav = useNavigate()
   const { user, name } = useAuth()
-  const { set, setSet, progress, reset, state, error } = useSet(id)
+  const { set, setSet, progress, reset, starred, toggleStar, savingStars, state, error } = useSet(id)
   const [share, setShare] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
   const [mutating, setMutating] = useState(false)
   const [sort, setSort] = useState<'original' | 'mastery'>('original')
+  const [starsOnly, setStarsOnly] = useState(false)
 
   const stats = useMemo(
     () =>
@@ -123,10 +125,11 @@ export default function SetView() {
   )
   const sorted = useMemo(() => {
     if (!set) return []
-    if (sort === 'original') return set.cards
+    const cards = starsOnly ? set.cards.filter((c) => starred.includes(c.id)) : set.cards
+    if (sort === 'original') return cards
     const rank: Record<Level, number> = { learning: 0, new: 1, familiar: 2, mastered: 3 }
-    return [...set.cards].sort((a, b) => rank[level(progress[a.id])] - rank[level(progress[b.id])])
-  }, [set, sort, progress])
+    return [...cards].sort((a, b) => rank[level(progress[a.id])] - rank[level(progress[b.id])])
+  }, [set, sort, progress, starsOnly, starred])
 
   if (state === 'loading')
     return (
@@ -252,7 +255,9 @@ export default function SetView() {
               </span>
               <span>
                 <span className="block font-display text-lg font-bold leading-tight">Review</span>
-                <span className="text-xs text-ink-2">{stats.due ? `${stats.due} due now` : 'Spaced repetition'}</span>
+                <span className="text-xs text-ink-2">
+                  {stats.due ? `${stats.due} due now` : 'Spaced repetition'}
+                </span>
               </span>
             </motion.div>
           </Link>
@@ -278,6 +283,14 @@ export default function SetView() {
 
       <div className="mt-10 flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-display text-2xl font-bold">Cards</h2>
+        <button
+          type="button"
+          aria-pressed={starsOnly}
+          onClick={() => setStarsOnly((only) => !only)}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold ${starsOnly ? 'bg-marker' : 'bg-paper hover:bg-marker-soft'}`}
+        >
+          Starred only ({set.cards.filter((c) => starred.includes(c.id)).length})
+        </button>
         <Segmented
           id="sort"
           value={sort}
@@ -288,6 +301,19 @@ export default function SetView() {
           ]}
         />
       </div>
+      {starsOnly && sorted.length > 0 && (
+        <Link
+          to={`/set/${set.id}/flashcards?starred=1`}
+          className="mt-4 inline-block text-sm font-semibold underline underline-offset-4"
+        >
+          Study starred flashcards →
+        </Link>
+      )}
+      {starsOnly && sorted.length === 0 && (
+        <p className="mt-4 rounded-xl bg-paper p-5 text-sm text-ink-2">
+          No starred cards yet. Switch off Starred only and tap a star beside a card.
+        </p>
+      )}
       <motion.ul layout className="mt-4 space-y-2.5">
         <AnimatePresence initial={false}>
           {sorted.map((c) => {
@@ -299,9 +325,19 @@ export default function SetView() {
                 transition={snap}
                 className="grid grid-cols-[auto_1fr] items-start gap-4 rounded-xl bg-paper px-4 py-3.5 shadow-card sm:grid-cols-[auto_minmax(0,1fr)_minmax(0,1.6fr)]"
               >
-                <span className={`mt-1.5 h-2.5 w-2.5 rounded-full ${dot[l]}`} title={l} />
+                <span className="row-span-2 flex flex-col items-center gap-1 sm:row-span-1">
+                  <StarButton
+                    starred={starred.includes(c.id)}
+                    term={c.term}
+                    onClick={() => void toggleStar(c.id)}
+                    disabled={savingStars.includes(c.id)}
+                  />
+                  <span className={`h-2 w-2 rounded-full ${dot[l]}`} title={l} />
+                </span>
                 <span className="font-semibold sm:border-r sm:border-rule-soft sm:pr-4">{c.term}</span>
-                <span className="col-start-2 whitespace-pre-wrap text-ink-2 sm:col-start-3">{c.definition}</span>
+                <span className="col-start-2 whitespace-pre-wrap text-ink-2 sm:col-start-3">
+                  {c.definition}
+                </span>
               </motion.li>
             )
           })}
@@ -334,7 +370,9 @@ export default function SetView() {
         <h2 className="font-display text-2xl font-bold">Delete “{set.title}”?</h2>
         <p className="mt-2 text-ink-2">
           The set and its {set.cards.length} cards are removed for good.{' '}
-          {cloud ? 'Anyone with the link loses access too.' : 'Previously shared links still contain their own copy.'}
+          {cloud
+            ? 'Anyone with the link loses access too.'
+            : 'Previously shared links still contain their own copy.'}
         </p>
         <div className="mt-6 flex justify-end gap-2">
           <Button tone="ghost" onClick={() => setConfirmDelete(false)}>

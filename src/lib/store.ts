@@ -83,9 +83,11 @@ export async function getSet(id: string): Promise<StudySet | null> {
 }
 
 export async function saveSet(set: StudySet): Promise<StudySet> {
-  if (!set.title.trim() || set.title.length > 200) throw new Error('Use a title between 1 and 200 characters.')
+  if (!set.title.trim() || set.title.length > 200)
+    throw new Error('Use a title between 1 and 200 characters.')
   if (set.description.length > 5000) throw new Error('Keep the description under 5,000 characters.')
-  if (set.cards.length < 2 || set.cards.length > 1000) throw new Error('A set needs between 2 and 1,000 cards.')
+  if (set.cards.length < 2 || set.cards.length > 1000)
+    throw new Error('A set needs between 2 and 1,000 cards.')
   if (
     set.cards.some(
       (c) => !c.term.trim() || !c.definition.trim() || c.term.length > 20_000 || c.definition.length > 20_000,
@@ -114,6 +116,7 @@ export async function deleteSet(id: string) {
     writeLocal(readLocal().filter((s) => s.id !== id))
     localStorage.removeItem(LS_PROG + id)
     localStorage.removeItem(LS_PROG + id + '.updated')
+    localStorage.removeItem('di.stars.' + id)
     return
   }
   const { error } = await supabase.from('study_sets').delete().eq('id', id)
@@ -148,6 +151,37 @@ export async function getProgress(setId: string): Promise<ProgressMap> {
     return (data.data as ProgressMap) ?? {}
   }
   return cached
+}
+
+export async function getStars(setId: string): Promise<string[]> {
+  if (!supabase) return JSON.parse(localStorage.getItem('di.stars.' + setId) || '[]')
+  const me = await uidOrNull()
+  if (!me) return []
+  const { data, error } = await supabase
+    .from('study_stars')
+    .select('card_id')
+    .eq('user_id', me)
+    .eq('set_id', setId)
+  if (error) throw new Error('Couldn’t load your starred cards. Check your connection and try again.')
+  return data.map((row) => row.card_id as string)
+}
+
+export async function saveStar(setId: string, cardId: string, starred: boolean) {
+  if (!supabase) {
+    const stars = await getStars(setId)
+    localStorage.setItem(
+      'di.stars.' + setId,
+      JSON.stringify(starred ? [...new Set([...stars, cardId])] : stars.filter((id) => id !== cardId)),
+    )
+    return
+  }
+  const me = await uidOrNull()
+  if (!me) throw new Error('Sign in to star cards.')
+  const query = supabase.from('study_stars')
+  const { error } = starred
+    ? await query.upsert({ user_id: me, set_id: setId, card_id: cardId }, { ignoreDuplicates: true })
+    : await query.delete().eq('user_id', me).eq('set_id', setId).eq('card_id', cardId)
+  if (error) throw new Error('Couldn’t save this star. Check your connection and try again.')
 }
 
 let pending: Record<string, ReturnType<typeof setTimeout>> = {}

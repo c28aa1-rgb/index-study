@@ -120,7 +120,7 @@ export default function Home() {
             <div>
               <p className="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-2">
                 <span className="h-2 w-2 rounded-full bg-margin" />
-                The Dalton study desk
+                Your study desk
               </p>
               <h1 className="desk-heading">
                 Turn class notes
@@ -224,7 +224,7 @@ export default function Home() {
         </>
       )}
       <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-ink/10 py-5 text-xs text-ink-3">
-        <span>Dalton Index</span>
+        <span>Index</span>
         <span>{cloud ? 'Your cards, across devices.' : 'Saved in this browser. Share a set to send a copy.'}</span>
       </footer>
     </Page>

@@ -1,12 +1,12 @@
 {
-  "name": "dalton-index",
+  "name": "index-study",
   "version": "1.0.0",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest run tests/*.test.ts",
-    "test:e2e": "VITE_SUPABASE_URL=https://dalton-test.supabase.co VITE_SUPABASE_ANON_KEY=sb_publishable_browser_tests npm run build -- --outDir dist-test && playwright test"
+    "test:e2e": "VITE_SUPABASE_URL=https://index-test.supabase.co VITE_SUPABASE_ANON_KEY=sb_publishable_browser_tests npm run build -- --outDir dist-test && playwright test"
   },
   "type": "module",
   "dependencies": {

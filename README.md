@@ -1,10 +1,12 @@
-# Dalton Index
+# Index
 
 [Open the app](https://c28aa1-rgb.github.io/dalton-index/) · [Source on GitHub](https://github.com/c28aa1-rgb/dalton-index)
 
-A Dalton-themed study app built with React, TypeScript, Vite, Tailwind CSS, and Framer Motion.
+A study app built with React, TypeScript, Vite, Tailwind CSS, and Framer Motion.
 
 Create and edit sets, reorder cards, import pasted notes or CSV/TXT/TSV files, and share sets. Study with flashcards, adaptive Learn rounds, written/multiple-choice/true-or-false tests, a timed Match game, and spaced review. Study progress persists between visits.
+
+Star individual cards from a set, Flashcards, or Learn. Stars are private to each account and sync across devices. Flashcards and Learn can focus on starred cards. Learn supports study goals, initial familiarity, adaptive recall practice and saved history for each answer direction. Its scheduler approximates Quizlet’s publicly described behavior; see [Learn behavior](docs/learn-design.md) for its rules and limitations.
 
 ## Run locally
 
@@ -21,7 +23,7 @@ The first visit opens the Google-only sign-in screen. Email/password sign-in and
 
 1. Create a Supabase project and run `supabase/schema.sql` in its SQL editor. The schema enables row-level security: only owners can change sets; only owners can read private sets; each account can access only its own progress.
 2. Copy `.env.example` to `.env.local` and fill in the project URL and public anon/publishable key. Never use a service-role key in a frontend build.
-3. Disable the Email auth provider and configure Google as described below. Set the Supabase Auth Site URL to the deployed app URL, including the repository path and trailing slash, such as `https://yourname.github.io/dalton-index/`. Add the local development URL if needed.
+3. Disable the Email auth provider and configure Google as described below. Set the Supabase Auth Site URL to the deployed app URL, including the repository path and trailing slash, such as `https://yourname.github.io/index/`. Add the local development URL if needed.
 4. Restart Vite and choose **Continue with Google**. No separate password or name form is required.
 
 Cloud share links refer to the live set; privacy changes and deletions apply to those links. Public sets appear in Explore; unlisted sets are available to anyone who has their URL. Unlisted is not access-controlled membership.
@@ -44,7 +46,7 @@ Google OAuth uses PKCE. Supabase exchanges the callback code before the app open
 1. Push this project to a GitHub repository with a `main` branch.
 2. In Settings → Pages, select **GitHub Actions** as the build source.
 3. For cloud mode, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as repository Actions **variables**. Both are required for Google sign-in.
-4. Push to `main` or run the Deploy Dalton Index workflow manually. It runs unit tests, browser tests, and the production build before deploying.
+4. Push to `main` or run the Deploy Index workflow manually. It runs unit tests, browser tests, and the production build before deploying.
 
 Hash routing and relative build paths support repository subdirectories and refreshes without a server rewrite. No repository or live Supabase project is provisioned by the source code.
 
@@ -67,4 +69,4 @@ PLAYWRIGHT_CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Ch
 
 Browser tests run desktop and mobile flows for import/edit, flashcards/undo, Learn, test scoring, Match, spaced review, sharing between Google accounts, Google-only PKCE entry, modal keyboard focus, and reduced motion. Browser tests use a separate build and mocked Supabase endpoints; they do not contact real user accounts. Unit tests cover answer grading, CSV quoting, share validation, and review scheduling. Real Google sign-in and production deployment still require a configured OAuth client and repository. Live database policies were verified separately; see `docs/backend-setup.md`.
 
-Design references: `docs/design-system.md`, `docs/design-philosophy.md`, and `docs/dalton-desk.png`.
+Design references: `docs/design-system.md`, `docs/design-philosophy.md`, and `docs/index-desk.png`.

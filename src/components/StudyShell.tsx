@@ -23,7 +23,7 @@ export function StudyShell({
     <motion.div variants={page} initial="initial" animate="enter" exit="exit" className="flex min-h-screen flex-col">
       <header className="sticky top-0 z-30 border-b border-ink/10 bg-desk/85 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-4 px-4 sm:px-6">
-          <span className="rounded-lg bg-ink px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-widest text-white">
+          <span className="shrink-0 whitespace-nowrap rounded-lg bg-ink px-2.5 py-1 font-mono text-xs font-bold uppercase tracking-widest text-white">
             {mode}
           </span>
           <span className="min-w-0 truncate font-display font-bold">{title}</span>

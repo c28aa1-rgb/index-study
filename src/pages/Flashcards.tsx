@@ -8,7 +8,8 @@ import {
   type PanInfo,
 } from 'framer-motion'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { StarButton } from '../components/StarButton'
 import { StudyShell } from '../components/StudyShell'
 import { Button, Empty, Modal, Page, Spinner, Toggle } from '../components/ui'
 import { useKey, useSet } from '../lib/hooks'
@@ -92,8 +93,14 @@ function FlipCard({
         transition={flip}
         onTap={onFlip}
       >
-        <div aria-hidden={flipped} className={face} style={reduced && flipped ? { visibility: 'hidden' } : undefined}>
-          <span className="flex h-14 items-center font-mono text-xs uppercase tracking-widest text-ink-3">{front}</span>
+        <div
+          aria-hidden={flipped}
+          className={face}
+          style={reduced && flipped ? { visibility: 'hidden' } : undefined}
+        >
+          <span className="flex h-14 items-center font-mono text-xs uppercase tracking-widest text-ink-3">
+            {front}
+          </span>
           <span
             className={`m-auto max-h-full overflow-auto whitespace-pre-wrap pb-14 text-center font-semibold leading-snug ${text(a)}`}
           >
@@ -137,7 +144,9 @@ function FlipCard({
 
 export default function Flashcards() {
   const { id } = useParams()
-  const { set, progress: savedProgress, rate, restore, state } = useSet(id)
+  const { set, progress: savedProgress, rate, restore, starred, toggleStar, savingStars, state } = useSet(id)
+  const [params, setParams] = useSearchParams()
+  const starsOnly = params.get('starred') === '1'
   const [history, setHistory] = useState<ProgressMap[]>([])
   const [deck, setDeck] = useState<Card[]>([])
   const [i, setI] = useState(0)
@@ -158,8 +167,13 @@ export default function Flashcards() {
   }
 
   useEffect(() => {
-    if (set) start(set.cards)
-  }, [set, opts.shuffle, opts.tracking])
+    if (set) start(starsOnly ? set.cards.filter((c) => starred.includes(c.id)) : set.cards)
+    // Keep the current round intact when a card is unstarred; apply stars on the next restart.
+  }, [set, opts.shuffle, opts.tracking, starsOnly])
+
+  const restart = () => {
+    if (set) start(starsOnly ? set.cards.filter((c) => starred.includes(c.id)) : set.cards)
+  }
 
   const card = deck[i]
   const done = deck.length > 0 && i >= deck.length
@@ -231,7 +245,31 @@ export default function Flashcards() {
         </Button>
       }
     >
-      {!done ? (
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <button
+          type="button"
+          aria-pressed={starsOnly}
+          onClick={() => setParams(starsOnly ? {} : { starred: '1' }, { replace: true })}
+          className={`rounded-lg px-3 py-2 text-sm font-semibold ${starsOnly ? 'bg-marker' : 'bg-paper hover:bg-marker-soft'}`}
+        >
+          Starred only
+        </button>
+        {card && !done && (
+          <StarButton
+            starred={starred.includes(card.id)}
+            term={card.term}
+            onClick={() => void toggleStar(card.id)}
+            disabled={savingStars.includes(card.id)}
+          />
+        )}
+      </div>
+      {deck.length === 0 ? (
+        <Empty
+          title="No starred cards yet"
+          body="Star cards in the set list, or switch off Starred only to study the full set."
+          action={<Button onClick={() => setParams({}, { replace: true })}>Study all cards</Button>}
+        />
+      ) : !done ? (
         <>
           <div className="mb-4 flex items-center justify-between font-mono text-sm">
             {opts.tracking ? (
@@ -344,8 +382,8 @@ export default function Flashcards() {
                 Keep going with {learning.length}
               </Button>
             )}
-            <Button tone="paper" onClick={() => start(set.cards)}>
-              Restart all
+            <Button tone="paper" onClick={restart}>
+              {starsOnly ? 'Restart starred' : 'Restart all'}
             </Button>
           </div>
         </motion.div>

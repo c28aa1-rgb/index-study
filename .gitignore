@@ -7,4 +7,4 @@ dist-test
 test-results
 playwright-report
 docs/*.png
-!docs/dalton-desk.png
+!docs/index-desk.png

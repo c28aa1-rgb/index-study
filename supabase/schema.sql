@@ -1,4 +1,4 @@
--- Dalton Index schema. Apply to the app's Supabase project.
+-- Index schema. Apply to the app's Supabase project.
 
 create or replace function public.valid_study_cards(value jsonb)
 returns boolean
@@ -79,3 +79,33 @@ create policy "own progress" on public.study_progress for all to authenticated
 revoke all on public.study_sets, public.study_progress from public, anon, authenticated;
 grant select on public.study_sets to anon;
 grant select, insert, update, delete on public.study_sets, public.study_progress to authenticated;
+
+-- Stars belong to the learner, including on someone else's shared set.
+create table if not exists public.study_stars (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  set_id uuid not null references public.study_sets(id) on delete cascade,
+  card_id text not null check (length(card_id) between 1 and 200),
+  primary key (user_id, set_id, card_id)
+);
+create index if not exists study_stars_set_idx on public.study_stars(set_id);
+alter table public.study_stars enable row level security;
+
+drop policy if exists "read own stars" on public.study_stars;
+create policy "read own stars" on public.study_stars for select to authenticated
+  using (user_id = (select auth.uid()));
+
+drop policy if exists "insert own stars" on public.study_stars;
+create policy "insert own stars" on public.study_stars for insert to authenticated
+  with check (
+    user_id = (select auth.uid()) and exists (
+      select 1 from public.study_sets
+      where id = set_id and cards @> jsonb_build_array(jsonb_build_object('id', card_id))
+    )
+  );
+
+drop policy if exists "delete own stars" on public.study_stars;
+create policy "delete own stars" on public.study_stars for delete to authenticated
+  using (user_id = (select auth.uid()));
+
+revoke all on public.study_stars from public, anon, authenticated;
+grant select, insert, delete on public.study_stars to authenticated;

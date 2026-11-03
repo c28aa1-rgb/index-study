@@ -74,7 +74,7 @@ export default function AuthPage() {
           aria-labelledby="signin-title"
         >
           <h2 id="signin-title" className="font-display text-3xl font-bold">
-            Sign in to Dalton Index
+            Sign in to Index
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-2">Use Google to sign in or create an account.</p>
           <Button tone="paper" className="mt-6 w-full" disabled={!googleEnabled || googleBusy} onClick={google}>

@@ -6,7 +6,9 @@ test('sign-in offers only Google and starts PKCE OAuth', async ({ page }) => {
   // Previous local-mode flags must never bypass Google sign-in.
   await page.addInitScript(() => localStorage.setItem('di.localAccess', '1'))
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Sign in to Dalton Index' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Sign in to Index' })).toBeVisible()
+  await expect(page).toHaveTitle('Index')
+  await expect(page.getByText(/Dalton/i)).toHaveCount(0)
   await expect(page.getByRole('textbox')).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Continue in this browser' })).toHaveCount(0)
   await page.getByRole('button', { name: 'Continue with Google' }).click()

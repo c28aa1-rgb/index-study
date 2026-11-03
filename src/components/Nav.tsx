@@ -7,7 +7,7 @@ import { toast } from './Toast'
 
 export function Logo() {
   return (
-    <Link to="/" className="group flex items-center gap-2.5" aria-label="Dalton Index home">
+    <Link to="/" className="group flex items-center gap-2.5" aria-label="Index home">
       <motion.span className="relative block h-7 w-8 sm:w-10" whileHover="hover">
         <motion.span
           className="absolute inset-0 rounded-[5px] border-2 border-ink bg-paper"
@@ -24,7 +24,7 @@ export function Logo() {
         </motion.span>
       </motion.span>
       <span className="font-display text-lg font-extrabold tracking-tight sm:text-xl">
-        Dalton<span className="text-margin">/</span>Index
+        Index
       </span>
     </Link>
   )

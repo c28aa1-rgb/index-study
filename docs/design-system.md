@@ -1,6 +1,6 @@
-# Dalton desk
+# Index study desk
 
-This carries forward the Dalton index-card direction already present in the project.
+Index uses a paper-and-ink study desk theme.
 
 Palette: desk grey `#E9EDF2`, paper white `#FFFFFF`, ink navy `#14213D`, rule blue `#9DB8E0`, margin red `#E5484D`, marker yellow `#F5E663`. Green `#2F9E6B` communicates successful recall.
 
@@ -10,7 +10,7 @@ Layout: left-aligned headings and controls. A 1,024px content boundary keeps the
 
 ```text
 Library                          Study
-[Dalton / Index]  Library Explore [Mode] Set title       [Close]
+[Index]  Library Explore [Mode] Set title       [Close]
                                  [progress__________________]
 Your study desk.   [Import]
 Your sets         [Find a set]       Prompt
@@ -23,4 +23,4 @@ The first review removed the repeating automatic hero flip, the highlighted slog
 
 Motion personality: responsive paper, with a calm landing. Signature easing `(0.2, 0, 0, 1)`; quick feedback 120–180ms, card transitions 200–350ms, page transitions 380ms. Springs handle direct manipulation. Card content, its shadow, and progress feedback respond together. No ambient loops compete with recall. Reduced motion removes transforms, and card backs remain readable through an explicit content switch.
 
-The theme preview in `dalton-desk.png` expresses the same system as a static canvas. Its repeated blue rules and shifting red divider suggest the sorting and revisiting of an index-card box.
+The interface preview in `index-desk.png` shows the Learn setup in the same paper-and-ink theme, with neutral Index branding.

@@ -1,4 +1,4 @@
-name: Deploy Dalton Index
+name: Deploy Index
 on:
   push:
     branches: [main]
