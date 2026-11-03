@@ -62,6 +62,9 @@ describe('adaptive Learn', () => {
     expect(memoryFor(card, progress, 'definition')).toBeDefined()
     expect(memoryFor(card, progress, 'term')).toBeUndefined()
     expect(memoryFor({ ...card, definition: 'Changed' }, progress, 'definition')).toBeUndefined()
+    const emoji = { ...card, term: '😀' }
+    const emojiProgress = { ...fresh(), learn: { term: answerMemory(emoji, undefined, 'written', true, now) } }
+    expect(memoryFor({ ...emoji, term: '😁' }, emojiProgress, 'term')).toBeUndefined()
     expect(review(progress, 2, now).learn).toEqual(progress.learn)
   })
   it('prioritizes weak cards, mixes new ones, avoids same-round repeats, and skips ready cards', () => {

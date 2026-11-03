@@ -11,7 +11,7 @@ const DAY = 86_400_000
 // https://quizlet.com/blog/spaced-repetition-for-all-cognitive-science-meets-big-data-in-a-procrastinating-world
 function contentKey(card: Card) {
   let hash = 2166136261
-  for (const char of card.term + '\0' + card.definition) hash = Math.imul(hash ^ char.charCodeAt(0), 16777619)
+  for (const char of card.term + '\0' + card.definition) hash = Math.imul(hash ^ char.codePointAt(0)!, 16777619)
   return hash >>> 0
 }
 
