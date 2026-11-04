@@ -3,12 +3,15 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ImportModal } from '../components/ImportModal'
 import { toast } from '../components/Toast'
-import { BackLink, Button, Empty, Page, Segmented, Spinner } from '../components/ui'
+import { BackLink, Button, Empty, Page, Segmented, Spinner, Toggle } from '../components/ui'
+import { CardSuggestions } from '../components/CardSuggestions'
+import { CardAttribution } from '../components/Attribution'
+import { playSound } from '../lib/sound'
 import { useAuth } from '../lib/auth'
 import { paper, snap } from '../lib/motion'
 import { getSet, saveSet } from '../lib/store'
 import { cloud } from '../lib/supabase'
-import type { Card, StudySet, Visibility } from '../lib/types'
+import type { Card, Side, StudySet, Visibility } from '../lib/types'
 import { uid } from '../lib/util'
 
 const blank = (): Card => ({ id: uid(), term: '', definition: '' })
@@ -19,12 +22,14 @@ function AutoText({
   placeholder,
   onKeyDown,
   inputRef,
+  onFocus,
 }: {
   value: string
   onChange: (v: string) => void
   placeholder: string
   onKeyDown?: (e: React.KeyboardEvent) => void
   inputRef?: (el: HTMLTextAreaElement | null) => void
+  onFocus?: () => void
 }) {
   const ref = useRef<HTMLTextAreaElement | null>(null)
   useEffect(() => {
@@ -45,6 +50,7 @@ function AutoText({
       placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
       onKeyDown={onKeyDown}
+      onFocus={onFocus}
       className="field resize-none overflow-hidden leading-snug"
     />
   )
@@ -58,6 +64,9 @@ function Row({
   onTabOut,
   onMove,
   register,
+  suggestions,
+  cards,
+  context,
 }: {
   card: Card
   index: number
@@ -66,8 +75,12 @@ function Row({
   onTabOut: () => void
   onMove: (direction: -1 | 1) => void
   register: (el: HTMLTextAreaElement | null) => void
+  suggestions: boolean
+  cards: Card[]
+  context: string
 }) {
   const drag = useDragControls()
+  const [focused, setFocused] = useState<Side | null>(null)
   return (
     <Reorder.Item
       value={card}
@@ -78,6 +91,12 @@ function Row({
       exit={{ opacity: 0, x: -40, height: 0, marginBottom: 0, transition: { duration: 0.2 } }}
       whileDrag={{ scale: 1.02, boxShadow: 'var(--shadow-lift)', rotate: -0.6 }}
       className="relative mb-4 list-none rounded-xl bg-paper shadow-card"
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null)
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') setFocused(null)
+      }}
     >
       <div className="flex items-center justify-between border-b-[1.5px] border-margin/70 px-4 py-2">
         <span className="font-mono text-sm font-bold text-ink-3">{index + 1}</span>
@@ -111,21 +130,51 @@ function Row({
             inputRef={register}
             onChange={(term) => onChange({ ...card, term })}
             placeholder="Term"
+            onFocus={() => setFocused('term')}
           />
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink-3">Term</p>
         </div>
         <div>
           <AutoText
             value={card.definition}
-            onChange={(definition) => onChange({ ...card, definition })}
+            onChange={(definition) => onChange({ ...card, definition, attribution: definition.trim() ? card.attribution : undefined })}
             placeholder="Definition"
+            onFocus={() => setFocused('definition')}
             onKeyDown={(e) => {
               if (e.key === 'Tab' && !e.shiftKey) onTabOut()
             }}
           />
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink-3">Definition</p>
+          <CardAttribution value={card.attribution} />
         </div>
       </div>
+      {suggestions && focused && (
+        <CardSuggestions
+          card={card}
+          side={focused}
+          cards={cards}
+          context={context}
+          index={index}
+          onSelect={(suggestion) => {
+            const term =
+              focused === 'term' ||
+              !card.term.trim() ||
+              suggestion.term.toLowerCase().startsWith(card.term.trim().toLowerCase())
+                ? suggestion.term
+                : card.term
+            const fillDefinition = focused === 'definition' || !card.definition.trim()
+            onChange({
+              ...card,
+              term,
+              definition: fillDefinition && suggestion.definition ? suggestion.definition : card.definition,
+              attribution:
+                fillDefinition && suggestion.definition ? suggestion.attribution : card.attribution,
+            })
+            playSound('tap')
+            setFocused(null)
+          }}
+        />
+      )}
     </Reorder.Item>
   )
 }
@@ -139,8 +188,21 @@ export default function Editor() {
   const [importOpen, setImportOpen] = useState(params.get('import') === '1')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [suggestions, setSuggestions] = useState(() => {
+    try {
+      return localStorage.getItem('index.suggestions') !== 'off'
+    } catch {
+      return true
+    }
+  })
   const refs = useRef<Record<string, HTMLTextAreaElement | null>>({})
   const focusNext = useRef<string | null>(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('index.suggestions', suggestions ? 'on' : 'off')
+    } catch {}
+  }, [suggestions])
 
   useEffect(() => {
     if (!ready) return
@@ -221,7 +283,9 @@ export default function Editor() {
       <div className="flex items-center justify-between pt-8">
         <BackLink to={id ? `/set/${id}` : '/'} label={id ? 'Back to set' : 'Library'} />
       </div>
-      <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight">{id ? 'Edit set' : 'New set'}</h1>
+      <h1 className="mt-4 font-display text-4xl font-extrabold tracking-tight">
+        {id ? 'Edit set' : 'New set'}
+      </h1>
 
       <div className="mt-8 grid gap-6">
         <div>
@@ -255,7 +319,9 @@ export default function Editor() {
             <Button
               tone="ghost"
               size="sm"
-              onClick={() => setCards(set.cards.map((c) => ({ ...c, term: c.definition, definition: c.term })))}
+              onClick={() =>
+                setCards(set.cards.map((c) => ({ ...c, term: c.definition, definition: c.term })))
+              }
             >
               Swap terms and definitions
             </Button>
@@ -275,6 +341,13 @@ export default function Editor() {
         </div>
       </div>
 
+      <div className="mt-5 max-w-lg">
+        <Toggle label="Term and definition suggestions" checked={suggestions} onChange={setSuggestions} />
+        <p className="mt-1 text-xs leading-relaxed text-ink-3">
+          Matches from your cards, public sets and Wiktionary. Choose a suggestion to use it.
+        </p>
+      </div>
+
       <Reorder.Group axis="y" values={set.cards} onReorder={setCards} className="mt-8">
         <AnimatePresence initial={false}>
           {set.cards.map((c, i) => (
@@ -282,6 +355,9 @@ export default function Editor() {
               key={c.id}
               card={c}
               index={i}
+              suggestions={suggestions}
+              cards={set.cards}
+              context={`${set.title} ${set.description}`}
               register={(el) => (refs.current[c.id] = el)}
               onChange={(nc) => setCards(set.cards.map((x) => (x.id === c.id ? nc : x)))}
               onDelete={() => setCards(set.cards.filter((x) => x.id !== c.id))}

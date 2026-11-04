@@ -1,4 +1,6 @@
-export type Card = { id: string; term: string; definition: string }
+import type { Attribution } from './attribution'
+
+export type Card = { id: string; term: string; definition: string; attribution?: Attribution }
 
 export type Visibility = 'private' | 'unlisted' | 'public'
 
@@ -30,6 +32,7 @@ export type LearnMemory = {
   misses: number
   streak: number
   writtenStreak: number
+  writtenAttempts?: number
   last: number
   correct: boolean
   stability: number // estimated recall half-life in milliseconds

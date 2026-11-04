@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { snap } from '../lib/motion'
+import { playSound } from '../lib/sound'
 
 export function StarButton({
   starred,
@@ -19,7 +20,10 @@ export function StarButton({
       aria-pressed={starred}
       title={starred ? 'Unstar card' : 'Star card'}
       disabled={disabled}
-      onClick={onClick}
+      onClick={() => {
+        playSound('tap')
+        onClick()
+      }}
       whileTap={{ scale: 0.85 }}
       transition={snap}
       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:bg-marker-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60 ${starred ? 'text-ink' : 'text-ink-3'}`}

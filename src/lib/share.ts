@@ -1,10 +1,18 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import type { StudySet } from './types'
+import { isAttribution, type Attribution } from './attribution'
 
-type Packed = { t: string; d: string; a: string; c: [string, string][] }
+type Packed = { t: string; d: string; a: string; c: [string, string, Attribution?][] }
 
 export function packSet(s: StudySet) {
-  const p: Packed = { t: s.title, d: s.description, a: s.author_name, c: s.cards.map((c) => [c.term, c.definition]) }
+  const p: Packed = {
+    t: s.title,
+    d: s.description,
+    a: s.author_name,
+    c: s.cards.map((c) =>
+      isAttribution(c.attribution) ? [c.term, c.definition, c.attribution] : [c.term, c.definition],
+    ),
+  }
   return compressToEncodedURIComponent(JSON.stringify(p))
 }
 
@@ -32,8 +40,8 @@ export function unpackSet(code: string): Packed | null {
       !p.c.every(
         (c: unknown) =>
           Array.isArray(c) &&
-          c.length === 2 &&
-          c.every((s) => typeof s === 'string' && s.trim().length > 0 && s.length <= 20_000),
+          (c.length === 2 || (c.length === 3 && isAttribution(c[2]))) &&
+          c.slice(0, 2).every((s) => typeof s === 'string' && s.trim().length > 0 && s.length <= 20_000),
       )
     )
       return null

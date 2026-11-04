@@ -7,6 +7,7 @@ import { useKey, useSet } from '../lib/hooks'
 import { paper } from '../lib/motion'
 import { isDue, review, type Rating } from '../lib/srs'
 import type { Card } from '../lib/types'
+import { playSound } from '../lib/sound'
 
 const ratings: { rating: Rating; title: string; hint: string; tone: string }[] = [
   { rating: 0, title: 'Again', hint: '10 minutes', tone: 'border-margin text-margin' },
@@ -31,8 +32,13 @@ export default function Review() {
     )
   }, [set])
   const card = deck[index]
+  const reveal = () => {
+    playSound('flip')
+    setRevealed(true)
+  }
   const grade = (rating: Rating) => {
     if (!card || !revealed) return
+    playSound(index === deck.length - 1 ? 'complete' : rating === 0 ? 'wrong' : 'correct')
     rate(card.id, rating)
     setRevealed(false)
     setIndex((n) => n + 1)
@@ -42,7 +48,7 @@ export default function Review() {
       if (!started || !card) return
       if (e.key === ' ' && !revealed) {
         e.preventDefault()
-        setRevealed(true)
+        reveal()
       } else if (revealed && /^[1-4]$/.test(e.key)) grade((Number(e.key) - 1) as Rating)
     },
     [started, revealed, card, index],
@@ -70,7 +76,12 @@ export default function Review() {
     .sort((a, b) => a - b)[0]
 
   return (
-    <StudyShell setId={set.id} title={set.title} mode="Review" progress={started ? index / deck.length : undefined}>
+    <StudyShell
+      setId={set.id}
+      title={set.title}
+      mode="Review"
+      progress={started ? index / deck.length : undefined}
+    >
       {!started || !card ? (
         <motion.section
           initial={{ opacity: 0, y: 12 }}
@@ -82,7 +93,11 @@ export default function Review() {
             ↻
           </div>
           <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight">
-            {started ? 'Review complete.' : deck.length ? 'A little today. More remembered.' : 'You’re caught up.'}
+            {started
+              ? 'Review complete.'
+              : deck.length
+                ? 'A little today. More remembered.'
+                : 'You’re caught up.'}
           </h1>
           <p className="mt-4 max-w-lg leading-relaxed text-ink-2">
             {started
@@ -134,7 +149,9 @@ export default function Review() {
             >
               <div className="ruled flex min-h-56 flex-col px-6 pb-8 pt-4 sm:px-10">
                 <p className="flex h-10 items-start text-sm text-ink-3">Term</p>
-                <h1 className="my-auto pt-8 text-center font-display text-3xl font-bold sm:text-4xl">{card.term}</h1>
+                <h1 className="my-auto pt-8 text-center font-display text-3xl font-bold sm:text-4xl">
+                  {card.term}
+                </h1>
               </div>
               {revealed && (
                 <motion.div
@@ -150,7 +167,7 @@ export default function Review() {
           </AnimatePresence>
           {!revealed ? (
             <div className="mt-8 text-center">
-              <Button size="lg" onClick={() => setRevealed(true)}>
+              <Button size="lg" onClick={reveal}>
                 Show answer
               </Button>
               <p className="mt-3 text-xs text-ink-3">Try to recall it first. Press Space to reveal.</p>

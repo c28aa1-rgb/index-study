@@ -167,14 +167,16 @@ test('Learn remembers misses, supports correction and starred study, and separat
   await page.reload()
   await page.getByRole('switch', { name: 'Starred only (1)', exact: true }).click()
   await page.getByRole('button', { name: 'Continue learning', exact: true }).click()
-  await page.getByRole('button', { name: new RegExp(card.definition) }).click()
+  await page.getByRole('textbox', { name: 'Type the answer', exact: true }).fill(card.definition)
+  await page.getByRole('button', { name: 'Answer', exact: true }).click()
+  await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await page.getByRole('button', { name: 'Continue to round 2' }).click()
   await expect(page.getByRole('textbox', { name: 'Type the answer', exact: true })).toBeVisible()
   const before = await page.evaluate(
     ({ key, id }) => JSON.parse(localStorage.getItem(key) || '{}')[id].learn.definition,
     { key: `di.progress.${USER_ID}.study-seed`, id: card.id },
   )
-  expect(before).toMatchObject({ attempts: 2, misses: 1, streak: 1, writtenStreak: 0 })
+  expect(before).toMatchObject({ attempts: 2, misses: 1, streak: 1, writtenStreak: 1 })
   await page.getByRole('button', { name: 'Options', exact: true }).click()
   await page.getByRole('button', { name: 'Term', exact: true }).click()
   await page.getByRole('button', { name: 'Done', exact: true }).click()

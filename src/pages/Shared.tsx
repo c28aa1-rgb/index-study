@@ -7,6 +7,7 @@ import { unpackSet } from '../lib/share'
 import { saveSet } from '../lib/store'
 import { cloud } from '../lib/supabase'
 import { uid } from '../lib/util'
+import { CardAttribution } from '../components/Attribution'
 
 export default function Shared() {
   const { code } = useParams()
@@ -37,7 +38,12 @@ export default function Shared() {
         author_name: name,
         owner_id: user?.id || null,
         visibility: 'private',
-        cards: packed.c.map(([term, definition]) => ({ id: uid(), term, definition })),
+        cards: packed.c.map(([term, definition, attribution]) => ({
+          id: uid(),
+          term,
+          definition,
+          ...(attribution ? { attribution } : {}),
+        })),
         created_at: now,
         updated_at: now,
       })
@@ -57,7 +63,9 @@ export default function Shared() {
         <p className="text-sm text-ink-3">Shared by {packed.a || 'a classmate'}</p>
         <h1 className="mt-3 font-display text-4xl font-extrabold">{packed.t}</h1>
         {packed.d && <p className="mt-3 text-ink-2">{packed.d}</p>}
-        <p className="mt-4 text-sm text-ink-3">{packed.c.length} cards. Save a copy to study in all five modes.</p>
+        <p className="mt-4 text-sm text-ink-3">
+          {packed.c.length} cards. Save a copy to study in all five modes.
+        </p>
         <Button className="mt-6" disabled={saving} onClick={save}>
           {saving ? 'Saving…' : 'Save and study'}
         </Button>
@@ -69,10 +77,13 @@ export default function Shared() {
       </section>
       <h2 className="mb-4 mt-8 font-display text-2xl font-bold">Cards in this set</h2>
       <div className="space-y-3">
-        {packed.c.map(([term, definition], i) => (
+        {packed.c.map(([term, definition, attribution], i) => (
           <div key={i} className="grid gap-3 rounded-xl bg-paper p-5 shadow-card sm:grid-cols-2">
             <p className="font-semibold">{term}</p>
-            <p className="whitespace-pre-wrap text-ink-2">{definition}</p>
+            <div>
+              <p className="whitespace-pre-wrap text-ink-2">{definition}</p>
+              <CardAttribution value={attribution} />
+            </div>
           </div>
         ))}
       </div>

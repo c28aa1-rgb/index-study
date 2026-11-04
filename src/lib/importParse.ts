@@ -1,5 +1,6 @@
 import type { Card } from './types'
 import { uid } from './util'
+import { isAttribution } from './attribution'
 
 export type Sep = { kind: 'tab' | 'comma' | 'dash' | 'custom'; custom?: string }
 export type RowSep = { kind: 'newline' | 'semicolon' | 'custom'; custom?: string }
@@ -22,7 +23,19 @@ export function parseImport(text: string, sep: Sep, rowSep: RowSep): Card[] {
     else term += s
   }
   const push = () => {
-    if (term.trim() || definition.trim()) result.push({ id: uid(), term: term.trim(), definition: definition.trim() })
+    if (term.trim() || definition.trim()) {
+      const text = definition.trim()
+      const credit = text.match(
+        /\n\(Source: (https:\/\/en\.wiktionary\.org\/wiki\/[^;\n]+); CC BY-SA 4\.0\)$/,
+      )
+      const attribution = credit ? { url: credit[1], license: 'CC BY-SA 4.0' as const } : undefined
+      result.push({
+        id: uid(),
+        term: term.trim(),
+        definition: attribution && isAttribution(attribution) ? text.slice(0, credit!.index).trim() : text,
+        ...(isAttribution(attribution) ? { attribution } : {}),
+      })
+    }
     term = ''
     definition = ''
     inDefinition = false
@@ -74,5 +87,10 @@ export function guess(text: string): { sep: Sep; rowSep: RowSep } {
 
 export function exportText(cards: Card[]) {
   const quote = (s: string) => (/[\t\n\r"]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s)
-  return cards.map((c) => `${quote(c.term)}\t${quote(c.definition)}`).join('\n')
+  return cards
+    .map(
+      (c) =>
+        `${quote(c.term)}\t${quote(c.definition + (isAttribution(c.attribution) ? `\n(Source: ${c.attribution.url}; ${c.attribution.license})` : ''))}`,
+    )
+    .join('\n')
 }

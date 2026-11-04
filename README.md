@@ -8,6 +8,10 @@ Create and edit sets, reorder cards, import pasted notes or CSV/TXT/TSV files, a
 
 Star individual cards from a set, Flashcards, or Learn. Stars are private to each account and sync across devices. Flashcards and Learn can focus on starred cards. Learn supports study goals, initial familiarity, adaptive recall practice and saved history for each answer direction. Its scheduler approximates Quizlet’s publicly described behavior; see [Learn behavior](docs/learn-design.md) for its rules and limitations.
 
+Smart grading in Learn and Test accepts common English rewordings using local rules, without an AI service or provider key. Once Learn reaches written recall, a miss stays written. The editor suggests terms/definitions from your own and public sets and offers Wiktionary definitions and word completions; suggestions fill a card only when selected. Dictionary credits are retained in sets, shared links, and text export/import. Suggestions can be turned off.
+
+Study feedback includes original synthesized sounds for flipping, correct answers, misses, matching pairs and completion. The speaker button in the header mutes sounds and remembers that choice. Audio begins only after a user interaction; no audio files or external sound service are used.
+
 ## Run locally
 
 ```sh

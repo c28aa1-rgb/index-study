@@ -3,15 +3,22 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { mcOptions, other, Prompt } from '../components/Questions'
 import { StudyShell } from '../components/StudyShell'
-import { Button, Empty, Page, Segmented, Spinner } from '../components/ui'
-import { check } from '../lib/grade'
+import { Button, Empty, Page, Segmented, Spinner, Toggle } from '../components/ui'
+import { check, checkSmart } from '../lib/grade'
 import { useSet } from '../lib/hooks'
 import { paper } from '../lib/motion'
 import type { Card, Side } from '../lib/types'
 import { shuffle } from '../lib/util'
+import { playSound } from '../lib/sound'
 
 type Kind = 'mixed' | 'written' | 'choice' | 'truefalse'
-type Question = { card: Card; kind: Exclude<Kind, 'mixed'>; options: string[]; statement: string; truth: boolean }
+type Question = {
+  card: Card
+  kind: Exclude<Kind, 'mixed'>
+  options: string[]
+  statement: string
+  truth: boolean
+}
 
 export default function Test() {
   const { id } = useParams()
@@ -24,6 +31,7 @@ export default function Test() {
   const [graded, setGraded] = useState(false)
   const [results, setResults] = useState<boolean[]>([])
   const [confirm, setConfirm] = useState(false)
+  const [smart, setSmart] = useState(true)
 
   if (state === 'loading')
     return (
@@ -74,12 +82,13 @@ export default function Test() {
       q.kind === 'truefalse'
         ? answers[i] === String(q.truth)
         : q.kind === 'written'
-          ? check(answers[i] || '', q.card[side]) !== 'wrong'
+          ? (smart ? checkSmart : check)(answers[i] || '', q.card[side]) !== 'wrong'
           : answers[i] === q.card[side],
     )
     setResults(marks)
     questions.forEach((q, i) => rate(q.card.id, marks[i] ? 2 : 0))
     setGraded(true)
+    playSound('complete')
     window.scrollTo({ top: 0, behavior: 'instant' })
   }
   const score = results.filter(Boolean).length
@@ -98,7 +107,9 @@ export default function Test() {
             ✓
           </div>
           <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight">A practice run.</h1>
-          <p className="mt-3 text-ink-2">Answer at your own pace. Get your score and corrections at the end.</p>
+          <p className="mt-3 text-ink-2">
+            Answer at your own pace. Get your score and corrections at the end.
+          </p>
           <label className="mt-8 block font-semibold" htmlFor="question-count">
             Number of questions
           </label>
@@ -133,6 +144,10 @@ export default function Test() {
               { value: 'definition', label: 'Definition' },
             ]}
           />
+          <div className="mt-6">
+            <Toggle label="Smart grading for written answers" checked={smart} onChange={setSmart} />
+            <p className="mt-1 text-xs text-ink-3">Accept common rewordings and matching key ideas.</p>
+          </div>
           <div className="mt-8">
             <Button size="lg" onClick={start}>
               Start test
@@ -155,7 +170,9 @@ export default function Test() {
               </h1>
               <p className="mt-3 text-ink-2">
                 {score} of {questions.length} correct.{' '}
-                {score === questions.length ? 'You got every answer.' : 'Review the corrections below, then try again.'}
+                {score === questions.length
+                  ? 'You got every answer.'
+                  : 'Review the corrections below, then try again.'}
               </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button onClick={start}>Try another test</Button>
@@ -192,7 +209,11 @@ export default function Test() {
                     Question {i + 1} of {questions.length}
                   </span>
                   <span>
-                    {q.kind === 'choice' ? 'Multiple choice' : q.kind === 'truefalse' ? 'True / false' : 'Written'}
+                    {q.kind === 'choice'
+                      ? 'Multiple choice'
+                      : q.kind === 'truefalse'
+                        ? 'True / false'
+                        : 'Written'}
                   </span>
                 </div>
                 <Prompt label={other(side)} text={q.card[other(side)]} />
@@ -230,17 +251,30 @@ export default function Test() {
                           }}
                           value={option}
                         />
-                        <span>{q.kind === 'truefalse' ? (option === 'true' ? 'True' : 'False') : option}</span>
+                        <span>
+                          {q.kind === 'truefalse' ? (option === 'true' ? 'True' : 'False') : option}
+                        </span>
                       </label>
                     ))}
                   </fieldset>
                 )}
                 {graded && (
-                  <div className={`mt-5 rounded-lg p-4 text-sm ${results[i] ? 'bg-mastered-soft' : 'bg-margin/10'}`}>
-                    <p className="font-bold">{results[i] ? 'Correct' : answers[i] ? 'Not quite' : 'Unanswered'}</p>
+                  <div
+                    className={`mt-5 rounded-lg p-4 text-sm ${results[i] ? 'bg-mastered-soft' : 'bg-margin/10'}`}
+                  >
+                    <p className="font-bold">
+                      {results[i]
+                        ? smart && q.kind === 'written' && check(answers[i] || '', q.card[side]) === 'wrong'
+                          ? 'Correct · accepted rewording'
+                          : 'Correct'
+                        : answers[i]
+                          ? 'Not quite'
+                          : 'Unanswered'}
+                    </p>
                     {!results[i] && (
                       <p className="mt-1">
-                        Correct answer: <strong>{q.kind === 'truefalse' ? String(q.truth) : q.card[side]}</strong>
+                        Correct answer:{' '}
+                        <strong>{q.kind === 'truefalse' ? String(q.truth) : q.card[side]}</strong>
                         {q.kind === 'truefalse' && !q.truth && (
                           <>
                             . {q.card[other(side)]} matches {q.card[side]}.

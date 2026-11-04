@@ -48,6 +48,23 @@ export async function mockGoogleAccount(
       return route.fulfill({ status: 404, json: { message: 'Unexpected mock endpoint' } })
     const object = request.headers().accept?.includes('vnd.pgrst.object')
     const value = (name: string) => url.searchParams.get(name)?.replace(/^eq\./, '')
+    if (url.pathname.endsWith('/rpc/suggest_study_cards')) {
+      const { p_query, p_side } = request.postDataJSON()
+      const sets: StudySet[] = await page.evaluate(() => JSON.parse(localStorage.getItem('di.sets') || '[]'))
+      const rows = sets
+        .filter((set) => set.owner_id === userId || set.visibility === 'public')
+        .flatMap((set) =>
+          set.cards
+            .filter(
+              (card) =>
+                typeof card[p_side as 'term' | 'definition'] === 'string' &&
+                card[p_side as 'term' | 'definition'].toLowerCase().startsWith(p_query.toLowerCase()),
+            )
+            .map((card) => ({ ...card, mine: set.owner_id === userId })),
+        )
+        .slice(0, 8)
+      return route.fulfill({ json: rows })
+    }
     if (url.pathname.endsWith('/study_sets')) {
       const sets = (await page.evaluate(() =>
         JSON.parse(localStorage.getItem('di.sets') || '[]'),
@@ -91,6 +108,7 @@ export async function mockGoogleAccount(
     }
     return route.fulfill({ status: 404 })
   })
+  await page.route('https://en.wiktionary.org/**', (route) => route.fulfill({ json: {} }))
 }
 
 export const test = base.extend({

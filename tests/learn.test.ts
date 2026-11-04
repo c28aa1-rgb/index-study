@@ -39,11 +39,17 @@ describe('adaptive Learn', () => {
     expect(questionKind(undefined, 'most')).toBe('written')
     expect(questionKind(undefined, 'some', review(undefined, 2, now))).toBe('written')
   })
-  it('demotes a missed card and returns to recognition support', () => {
+  it('resets a missed recall streak while keeping the card in written practice', () => {
     const memory = learned()
     const missed = answerMemory(card, memory, 'written', false, now + 180_000)
     expect(missed).toMatchObject({ streak: 0, writtenStreak: 0, misses: 1 })
-    expect(questionKind(missed, 'most')).toBe('mc')
+    expect(questionKind(missed, 'new')).toBe('written')
+    const missedAgain = answerMemory(card, missed, 'written', false, now + 240_000)
+    expect(questionKind(missedAgain, 'new')).toBe('written')
+    expect(questionKind(answerMemory(card, undefined, 'mc', false, now), 'new')).toBe('mc')
+    const oldMemory = { ...missed }
+    delete oldMemory.writtenAttempts
+    expect(questionKind(oldMemory, 'new')).toBe('written')
     expect(meetsGoal(missed, 'familiarity', now + 180_000)).toBe(false)
     expect(missed.stability).toBeLessThan(memory.stability)
   })

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Logo } from '../components/Nav'
+import { SoundToggle } from '../components/SoundToggle'
 import { Button, Page } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { safeReturnTo, signInWithGoogle } from '../lib/oauth'
@@ -50,8 +51,9 @@ export default function AuthPage() {
   }
   return (
     <Page className="flex min-h-screen flex-col">
-      <header className="py-7">
+      <header className="flex items-center justify-between py-7">
         <Logo />
+        <SoundToggle />
       </header>
       <div className="my-auto grid items-center gap-12 py-10 md:grid-cols-[1fr_1.05fr] md:gap-20">
         <div className="max-w-md">

@@ -21,6 +21,7 @@ import {
 } from '../lib/learn'
 import { paper, snap } from '../lib/motion'
 import { fresh } from '../lib/srs'
+import { playSound } from '../lib/sound'
 import type { Card, CardProgress, Side } from '../lib/types'
 
 type Q = { card: Card; kind: QuestionKind; options: string[] }
@@ -30,6 +31,7 @@ type Preferences = {
   answerWith: Side
   starsOnly: boolean
   retype: boolean
+  smart: boolean
 }
 const defaults: Preferences = {
   goal: 'understanding',
@@ -37,6 +39,7 @@ const defaults: Preferences = {
   answerWith: 'definition',
   starsOnly: false,
   retype: true,
+  smart: true,
 }
 const goals: Record<LearnGoal, { label: string; description: string }> = {
   familiarity: {
@@ -62,6 +65,7 @@ function readPreferences(key: string): Preferences {
       answerWith: p.answerWith === 'term' ? 'term' : 'definition',
       starsOnly: p.starsOnly === true,
       retype: p.retype !== false,
+      smart: p.smart !== false,
     }
   } catch {
     return defaults
@@ -74,7 +78,7 @@ export default function Learn() {
   const { set, progress, learnAnswer, starred, toggleStar, savingStars, state, error } = useSet(id)
   const prefsKey = `di.learn-options.${user?.id}.${id}`
   const [prefs, setPrefs] = useState(() => readPreferences(prefsKey))
-  const { goal, familiarity, answerWith, starsOnly, retype } = prefs
+  const { goal, familiarity, answerWith, starsOnly, retype, smart } = prefs
   const [started, setStarted] = useState(false)
   const [queue, setQueue] = useState<Card[]>([])
   const [round, setRound] = useState(1)
@@ -141,7 +145,14 @@ export default function Learn() {
   const grade = (correct: boolean, given: string, verdict?: Verdict) => {
     if (!q || feedback || opts) return
     const before = progress[q.card.id] ?? fresh()
-    learnAnswer(q.card, answerWith, q.kind, correct, goal)
+    const nextProgress = learnAnswer(q.card, answerWith, q.kind, correct, goal)
+    playSound(
+      correct
+        ? cards.every((card) => meetsGoal(memoryFor(card, nextProgress[card.id], answerWith), goal))
+          ? 'complete'
+          : 'correct'
+        : 'wrong',
+    )
     if (q.kind === 'mc') setChosen(given)
     setFeedback({ verdict: verdict ?? (correct ? 'correct' : 'wrong'), given, before })
   }
@@ -393,7 +404,7 @@ export default function Learn() {
                 disabled={!!feedback}
                 onSkip={() => grade(false, '')}
                 onSubmit={(value) => {
-                  const verdict = gradeLearnAnswer(value, answer, goal)
+                  const verdict = gradeLearnAnswer(value, answer, goal, smart)
                   grade(verdict !== 'wrong', value, verdict)
                 }}
               />
@@ -412,9 +423,11 @@ export default function Learn() {
                   >
                     {feedback.verdict === 'correct'
                       ? 'Correct'
-                      : feedback.verdict === 'close'
-                        ? 'Close enough. Watch the spelling.'
-                        : 'Let’s practice this one again.'}
+                      : feedback.verdict === 'equivalent'
+                        ? 'Correct · accepted rewording'
+                        : feedback.verdict === 'close'
+                          ? 'Close enough. Watch the spelling.'
+                          : 'Let’s practice this one again.'}
                   </p>
                   {feedback.verdict !== 'correct' && (
                     <p className="mt-2 whitespace-pre-wrap text-sm">
@@ -471,6 +484,20 @@ export default function Learn() {
           ]}
         />
         <div className="mt-4">
+          {goal !== 'mastery' && (
+            <Toggle
+              label="Smart grading"
+              checked={smart}
+              onChange={(value) => {
+                setPrefs((p) => ({ ...p, smart: value }))
+              }}
+            />
+          )}
+          <p className="mt-1 text-xs leading-relaxed text-ink-3">
+            {goal === 'mastery'
+              ? 'Complete mastery uses exact spelling.'
+              : 'Accept common rewordings and matching key ideas. You can correct a grade with “I was right”.'}
+          </p>
           <Toggle
             label="Retype missed written answers"
             checked={retype}

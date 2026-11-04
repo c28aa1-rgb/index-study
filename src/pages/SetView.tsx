@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { toast } from '../components/Toast'
 import { StarButton } from '../components/StarButton'
+import { CardAttribution } from '../components/Attribution'
 import { BackLink, Button, Empty, MasteryStrip, Modal, Page, Segmented, Spinner } from '../components/ui'
 import { useAuth } from '../lib/auth'
 import { useSet } from '../lib/hooks'
@@ -335,9 +336,10 @@ export default function SetView() {
                   <span className={`h-2 w-2 rounded-full ${dot[l]}`} title={l} />
                 </span>
                 <span className="font-semibold sm:border-r sm:border-rule-soft sm:pr-4">{c.term}</span>
-                <span className="col-start-2 whitespace-pre-wrap text-ink-2 sm:col-start-3">
+                <div className="col-start-2 whitespace-pre-wrap text-ink-2 sm:col-start-3">
                   {c.definition}
-                </span>
+                  <CardAttribution value={c.attribution} />
+                </div>
               </motion.li>
             )
           })}

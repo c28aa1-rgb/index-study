@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth'
 import { snap } from '../lib/motion'
 import { supabase } from '../lib/supabase'
 import { toast } from './Toast'
+import { SoundToggle } from './SoundToggle'
 
 export function Logo() {
   return (
@@ -71,6 +72,7 @@ export function Nav() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
+          <SoundToggle />
           <motion.button
             whileTap={{ scale: 0.95 }}
             transition={snap}

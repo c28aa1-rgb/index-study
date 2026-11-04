@@ -109,3 +109,22 @@ create policy "delete own stars" on public.study_stars for delete to authenticat
 
 revoke all on public.study_stars from public, anon, authenticated;
 grant select, insert, delete on public.study_stars to authenticated;
+
+-- Suggestions only search the learner's own sets and intentionally public sets.
+create or replace function public.suggest_study_cards(p_query text, p_side text default 'term')
+returns table(term text, definition text, mine boolean, attribution jsonb)
+language sql stable security invoker
+set search_path = ''
+as $$
+  select c->>'term', c->>'definition', s.owner_id = (select auth.uid()), c->'attribution'
+  from public.study_sets s
+  cross join lateral jsonb_array_elements(s.cards) c
+  where (s.owner_id = (select auth.uid()) or s.visibility = 'public')
+    and length(btrim(p_query)) between 2 and 300
+    and p_side in ('term', 'definition')
+    and starts_with(lower(c->>p_side), lower(btrim(p_query)))
+  order by (s.owner_id = (select auth.uid())) desc, (lower(c->>p_side) = lower(btrim(p_query))) desc, s.updated_at desc
+  limit 8;
+$$;
+revoke all on function public.suggest_study_cards(text, text) from public, anon;
+grant execute on function public.suggest_study_cards(text, text) to authenticated;

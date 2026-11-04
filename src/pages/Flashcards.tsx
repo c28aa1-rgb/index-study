@@ -16,6 +16,7 @@ import { useKey, useSet } from '../lib/hooks'
 import { flip, paper, snap } from '../lib/motion'
 import type { Card, ProgressMap } from '../lib/types'
 import { shuffle } from '../lib/util'
+import { playSound } from '../lib/sound'
 
 type Dir = -1 | 1
 
@@ -177,9 +178,14 @@ export default function Flashcards() {
 
   const card = deck[i]
   const done = deck.length > 0 && i >= deck.length
+  const flipCard = () => {
+    playSound('flip')
+    setFlipped((value) => !value)
+  }
 
   const advance = (d: Dir) => {
     if (!card) return
+    playSound(opts.tracking ? (i === deck.length - 1 ? 'complete' : d === 1 ? 'correct' : 'wrong') : 'flip')
     setDir(d)
     setFlipped(false)
     if (opts.tracking) {
@@ -195,6 +201,7 @@ export default function Flashcards() {
 
   const undo = () => {
     if (i === 0) return
+    playSound('flip')
     const prev = deck[i - 1]
     const snapshot = history[i - 1]
     if (snapshot) restore(snapshot)
@@ -210,7 +217,7 @@ export default function Flashcards() {
     (e) => {
       if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
         e.preventDefault()
-        setFlipped((f) => !f)
+        flipCard()
       } else if (e.key === 'ArrowRight') advance(1)
       else if (e.key === 'ArrowLeft') advance(-1)
       else if (e.key.toLowerCase() === 'z' && opts.tracking) undo()
@@ -315,7 +322,7 @@ export default function Flashcards() {
                   key={card.id + i}
                   card={card}
                   flipped={flipped}
-                  onFlip={() => setFlipped((f) => !f)}
+                  onFlip={flipCard}
                   front={opts.front}
                   onSwipe={advance}
                   tracking={opts.tracking}

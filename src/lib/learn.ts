@@ -1,6 +1,6 @@
 import type { Card, CardProgress, LearnMemory, ProgressMap, Side } from './types'
 import { shuffle } from './util'
-import { check, type Verdict } from './grade'
+import { check, checkSmart, type Verdict } from './grade'
 
 export type LearnGoal = 'familiarity' | 'understanding' | 'mastery'
 export type Familiarity = 'new' | 'some' | 'most'
@@ -11,7 +11,8 @@ const DAY = 86_400_000
 // https://quizlet.com/blog/spaced-repetition-for-all-cognitive-science-meets-big-data-in-a-procrastinating-world
 function contentKey(card: Card) {
   let hash = 2166136261
-  for (const char of card.term + '\0' + card.definition) hash = Math.imul(hash ^ char.codePointAt(0)!, 16777619)
+  for (const char of card.term + '\0' + card.definition)
+    hash = Math.imul(hash ^ char.codePointAt(0)!, 16777619)
   return hash >>> 0
 }
 
@@ -38,12 +39,15 @@ export function questionKind(
   goal: LearnGoal = 'understanding',
 ): QuestionKind {
   if (goal === 'familiarity') return 'mc'
-  if (memory) return memory.streak > 0 ? 'written' : 'mc'
+  if (memory)
+    return memory.streak > 0 || (memory.writtenAttempts ?? 0) > 0 || memory.attempts > memory.misses
+      ? 'written'
+      : 'mc'
   return familiarity === 'most' || (familiarity === 'some' && (p?.reps ?? 0) > 0) ? 'written' : 'mc'
 }
 
-export function gradeLearnAnswer(given: string, expected: string, goal: LearnGoal): Verdict {
-  if (goal !== 'mastery') return check(given, expected)
+export function gradeLearnAnswer(given: string, expected: string, goal: LearnGoal, smart = false): Verdict {
+  if (goal !== 'mastery') return smart ? checkSmart(given, expected) : check(given, expected)
   const normalize = (value: string) => value.normalize('NFC').toLowerCase().replace(/\s+/g, ' ').trim()
   const options = [expected, ...expected.split(/;|\s\/\s|\bor\b/)]
   return given.trim() && options.some((option) => normalize(option) === normalize(given))
@@ -72,6 +76,7 @@ export function answerMemory(
     misses: (memory?.misses ?? 0) + (correct ? 0 : 1),
     streak,
     writtenStreak,
+    writtenAttempts: (memory?.writtenAttempts ?? 0) + (kind === 'written' ? 1 : 0),
     last: now,
     correct,
     stability,
