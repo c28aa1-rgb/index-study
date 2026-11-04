@@ -95,7 +95,11 @@ function Row({
         if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(null)
       }}
       onKeyDown={(event) => {
-        if (event.key === 'Escape') setFocused(null)
+        if (event.key === 'Escape') {
+          const label = focused === 'term' ? 'Term' : 'Definition'
+          event.currentTarget.querySelector<HTMLTextAreaElement>(`textarea[aria-label="${label}"]`)?.focus()
+          setFocused(null)
+        }
       }}
     >
       <div className="flex items-center justify-between border-b-[1.5px] border-margin/70 px-4 py-2">
@@ -141,7 +145,11 @@ function Row({
             placeholder="Definition"
             onFocus={() => setFocused('definition')}
             onKeyDown={(e) => {
-              if (e.key === 'Tab' && !e.shiftKey) onTabOut()
+              if (
+                e.key === 'Tab' &&
+                !e.shiftKey &&
+                !e.currentTarget.closest('li')?.querySelector('[role="group"] button')
+              ) onTabOut()
             }}
           />
           <p className="mt-1 font-mono text-[10px] uppercase tracking-widest text-ink-3">Definition</p>

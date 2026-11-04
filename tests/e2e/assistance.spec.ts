@@ -72,7 +72,7 @@ test('editor suggests either side from existing cards and preserves a custom def
   await expect(
     page.getByRole('group', { name: 'Suggestions for card 1' }).getByRole('button', { name: /Ribosome/ }),
   ).toBeVisible()
-  await page.screenshot({ path: `docs/suggestions-${testInfo.project.name}.png`, animations: 'disabled' })
+  await page.getByRole('group', { name: 'Suggestions for card 1' }).locator('..').screenshot({ path: `docs/suggestions-${testInfo.project.name}.png`, animations: 'disabled' })
   await page
     .getByRole('group', { name: 'Suggestions for card 1' })
     .getByRole('button', { name: /Ribosome/ })
@@ -139,6 +139,19 @@ test('dictionary suggestions keep attribution after saving and never insert mark
     await page.evaluate(() => (window as unknown as { badSuggestion?: boolean }).badSuggestion),
   ).toBeUndefined()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('last-card suggestions can be selected with Tab and Enter', async ({ page }) => {
+  await seed(page)
+  await page.goto('/#/create')
+  await page.getByRole('textbox', { name: 'Definition', exact: true }).last().fill('Produces pro')
+  const suggestion = page.getByRole('group', { name: 'Suggestions for card 3' }).getByRole('button', { name: /Ribosome/ })
+  await expect(suggestion).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(suggestion).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('textbox', { name: 'Term', exact: true })).toHaveCount(3)
+  await expect(page.getByRole('textbox', { name: 'Term', exact: true }).last()).toHaveValue('Ribosome')
 })
 
 test('sounds play only after interaction and mute persists between visits', async ({ page }) => {
