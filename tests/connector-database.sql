@@ -62,6 +62,22 @@ begin
   exception when sqlstate '22023' then null; end;
 end; $$;
 reset role;
+-- Deleted clients, expired sessions and revoked provider consents fail closed too.
+update auth.oauth_clients set deleted_at=now() where id='f1000000-0000-4000-a000-000000000003';
+set local role authenticated;
+do $$ begin begin perform public.index_study_connector('find_study_sets','{}'); raise exception 'Deleted client still works'; exception when sqlstate '42501' then null; end; end; $$;
+reset role;
+update auth.oauth_clients set deleted_at=null where id='f1000000-0000-4000-a000-000000000003';
+update auth.sessions set not_after=now()-interval '1 minute' where id='f1000000-0000-4000-a000-000000000004';
+set local role authenticated;
+do $$ begin begin perform public.index_study_connector('find_study_sets','{}'); raise exception 'Expired session still works'; exception when sqlstate '42501' then null; end; end; $$;
+reset role;
+update auth.sessions set not_after=null where id='f1000000-0000-4000-a000-000000000004';
+update auth.oauth_consents set revoked_at=now() where id='f1000000-0000-4000-a000-000000000005';
+set local role authenticated;
+do $$ begin begin perform public.index_study_connector('find_study_sets','{}'); raise exception 'Revoked consent still works'; exception when sqlstate '42501' then null; end; end; $$;
+reset role;
+update auth.oauth_consents set revoked_at=null where id='f1000000-0000-4000-a000-000000000005';
 -- Immediate disconnection, even while the JWT is otherwise valid.
 delete from public.study_connector_grants where user_id='f1000000-0000-4000-a000-000000000001';
 set local role authenticated;

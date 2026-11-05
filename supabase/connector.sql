@@ -90,7 +90,8 @@ begin
   then raise exception using errcode='42501', message='Connect your Index account.'; end if;
   cid := (claims->>'client_id')::uuid;
   sid := (claims->>'session_id')::uuid;
-  if not exists (select 1 from public.study_connector_grants g where g.user_id=uid and g.client_id=cid)
+  if not exists (select 1 from auth.oauth_clients c where c.id=cid and c.deleted_at is null)
+    or not exists (select 1 from public.study_connector_grants g where g.user_id=uid and g.client_id=cid)
     or not exists (select 1 from auth.sessions s where s.id=sid and s.user_id=uid and s.oauth_client_id=cid and s.created_at >= (select g.created_at from public.study_connector_grants g where g.user_id=uid and g.client_id=cid) and 'openid'=any(string_to_array(s.scopes,' ')) and (s.not_after is null or s.not_after > now()))
     or not exists (select 1 from auth.oauth_consents c where c.user_id=uid and c.client_id=cid and c.revoked_at is null)
   then raise exception using errcode='42501', message='Your Index connection was disconnected. Reconnect your account.'; end if;

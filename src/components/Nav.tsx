@@ -47,7 +47,7 @@ export function Nav() {
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-desk/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4 sm:px-6">
         <Logo />
-        <nav className="ml-4 hidden items-center gap-1 sm:flex">
+        <nav className="ml-4 hidden items-center gap-1 md:flex">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -105,7 +105,7 @@ export function Nav() {
             ))}
         </div>
       </div>
-      <nav className="flex gap-1 px-4 pb-2 sm:hidden">
+      <nav className="flex gap-1 px-4 pb-2 md:hidden">
         {links.map((l) => (
           <NavLink
             key={l.to}
