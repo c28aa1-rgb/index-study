@@ -55,7 +55,7 @@ function ShareModal({
   const makeUnlisted = async () => {
     setUpdating(true)
     try {
-      onUpdate(await saveSet({ ...set, visibility: 'unlisted' }))
+      onUpdate(await saveSet({ ...set, visibility: 'unlisted' }, set.updated_at))
       toast('Sharing enabled')
     } catch (e) {
       toast((e as Error).message)

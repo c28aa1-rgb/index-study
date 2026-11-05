@@ -17,6 +17,8 @@ const Match = lazy(() => import('./pages/Match'))
 const Review = lazy(() => import('./pages/Review'))
 const Shared = lazy(() => import('./pages/Shared'))
 const AuthPage = lazy(() => import('./pages/Auth'))
+const Connections = lazy(() => import('./pages/Connections'))
+const OAuthConsent = lazy(() => import('./pages/OAuthConsent'))
 
 export default function App() {
   const loc = useLocation()
@@ -54,6 +56,8 @@ export default function App() {
             <Route path="/set/:id/review" element={<Review />} />
             <Route path="/shared/:code" element={<Shared />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/connections" element={<Connections />} />
+            <Route path="/connect/authorize" element={<OAuthConsent />} />
             <Route path="*" element={<Home />} />
           </Routes>
         </AnimatePresence>

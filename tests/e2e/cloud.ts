@@ -50,7 +50,14 @@ export async function mockGoogleAccount(
     const value = (name: string) => url.searchParams.get(name)?.replace(/^eq\./, '')
     if (url.pathname.endsWith('/rpc/suggest_study_cards')) {
       const { p_query, p_side } = request.postDataJSON()
-      const sets: StudySet[] = await page.evaluate(() => JSON.parse(localStorage.getItem('di.sets') || '[]'))
+      let sets: StudySet[]
+      try {
+        sets = await page.evaluate(() => JSON.parse(localStorage.getItem('di.sets') || '[]'))
+      } catch (error) {
+        if (/Execution context was destroyed|Target page.*closed/.test(String(error)))
+          return route.abort().catch(() => {}) // A pending suggestion was cancelled by navigation.
+        throw error
+      }
       const rows = sets
         .filter((set) => set.owner_id === userId || set.visibility === 'public')
         .flatMap((set) =>
@@ -69,8 +76,10 @@ export async function mockGoogleAccount(
       const sets = (await page.evaluate(() =>
         JSON.parse(localStorage.getItem('di.sets') || '[]'),
       )) as StudySet[]
-      if (request.method() === 'POST') {
+      if (['POST', 'PATCH'].includes(request.method())) {
         const next = request.postDataJSON() as StudySet
+        if (request.method() === 'PATCH' && !sets.some(s => s.id === value('id') && s.updated_at === value('updated_at') && s.owner_id === userId))
+          return route.fulfill({ json: object ? null : [] })
         await page.evaluate(
           (sets) => localStorage.setItem('di.sets', JSON.stringify(sets)),
           [next, ...sets.filter((s) => s.id !== next.id)],

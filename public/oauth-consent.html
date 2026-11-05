@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connect Index</title><meta name="referrer" content="no-referrer"></head>
+<body><p>Opening your Index connection request…</p><script>
+// Supabase appends authorization_id as a regular query parameter. Bridge to HashRouter.
+const id = new URLSearchParams(location.search).get('authorization_id');
+location.replace('./#/connect/authorize' + (id ? '?authorization_id=' + encodeURIComponent(id) : ''));
+</script></body></html>

@@ -82,7 +82,7 @@ export async function getSet(id: string): Promise<StudySet | null> {
   return data ? checkedSets([data])[0] : null
 }
 
-export async function saveSet(set: StudySet): Promise<StudySet> {
+export async function saveSet(set: StudySet, expectedUpdatedAt?: string): Promise<StudySet> {
   if (!set.title.trim() || set.title.length > 200)
     throw new Error('Use a title between 1 and 200 characters.')
   if (set.description.length > 5000) throw new Error('Keep the description under 5,000 characters.')
@@ -102,12 +102,13 @@ export async function saveSet(set: StudySet): Promise<StudySet> {
   }
   const me = await uidOrNull()
   if (!me) throw new Error('Sign in to save sets.')
-  const { data, error } = await supabase
-    .from('study_sets')
-    .upsert({ ...next, owner_id: me })
-    .select()
-    .single()
+  const values = { ...next, owner_id: me }
+  const query = expectedUpdatedAt
+    ? supabase.from('study_sets').update(values).eq('id', set.id).eq('owner_id', me).eq('updated_at', expectedUpdatedAt)
+    : supabase.from('study_sets').insert(values)
+  const { data, error } = await query.select().maybeSingle()
   if (error) throw error
+  if (!data) throw new Error('This set changed while you were editing. Your draft is still here. Open the current set in another tab and compare before saving again.')
   return data as StudySet
 }
 

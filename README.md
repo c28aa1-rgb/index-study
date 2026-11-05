@@ -74,3 +74,7 @@ PLAYWRIGHT_CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Ch
 Browser tests run desktop and mobile flows for import/edit, flashcards/undo, Learn, test scoring, Match, spaced review, sharing between Google accounts, Google-only PKCE entry, modal keyboard focus, and reduced motion. Browser tests use a separate build and mocked Supabase endpoints; they do not contact real user accounts. Unit tests cover answer grading, CSV quoting, share validation, and review scheduling. Real Google sign-in and production deployment still require a configured OAuth client and repository. Live database policies were verified separately; see `docs/backend-setup.md`.
 
 Design references: `docs/design-system.md`, `docs/design-philosophy.md`, and `docs/index-desk.png`.
+
+## ChatGPT connection
+
+The Index MCP connector can create private sets from notes and add/remove cards in your existing sets. It uses the same Google account, explicit OAuth consent and immediate disconnection. See [setup and permission boundaries](docs/chatgpt-connector.md) for the one-time Supabase settings and final connection test. The server is separate from the GitHub Pages frontend; no AI API key or database service key is included in the plugin.

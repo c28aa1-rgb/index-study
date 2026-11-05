@@ -34,6 +34,7 @@ export function Logo() {
 const links = [
   { to: '/', label: 'Library' },
   { to: '/explore', label: 'Explore' },
+  { to: '/connections', label: 'Connections' },
 ]
 
 export function Nav() {
@@ -41,7 +42,7 @@ export function Nav() {
   const nav = useNavigate()
   const loc = useLocation()
   const studying = /\/(flashcards|learn|test|match|review)$/.test(loc.pathname)
-  if (studying || loc.pathname === '/auth') return null
+  if (studying || ['/auth', '/connect/authorize'].includes(loc.pathname)) return null
   return (
     <header className="sticky top-0 z-40 border-b border-ink/10 bg-desk/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-5xl items-center gap-2 px-4 sm:px-6">

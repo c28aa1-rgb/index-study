@@ -277,7 +277,7 @@ export default function Editor() {
     setError('')
     setSaving(true)
     try {
-      const saved = await saveSet({ ...set, title: set.title.trim(), cards })
+      const saved = await saveSet({ ...set, title: set.title.trim(), cards }, id && set.owner_id === user?.id ? set.updated_at : undefined)
       toast(id ? 'Set saved' : 'Set created')
       nav(`/set/${saved.id}`, { replace: true })
     } catch (e) {
@@ -407,7 +407,7 @@ export default function Editor() {
             {error || `${set.cards.filter((c) => c.term || c.definition).length} cards`}
           </motion.span>
         </AnimatePresence>
-        <Button tone="marker" onClick={save} disabled={saving}>
+        <Button tone="marker" onPointerDown={event => event.preventDefault()} onClick={save} disabled={saving}>
           {saving ? 'Saving…' : id ? 'Save changes' : 'Create set'}
         </Button>
       </div>

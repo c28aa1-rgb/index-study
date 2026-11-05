@@ -1,0 +1,18 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "index-study": {
+      "type": "streamable-http",
+      "url": "https://wvaouepnnlqlxftrvjpf.supabase.co/functions/v1/index-mcp",
+      "extensions": {
+        "com.openai": {
+          "auth": {
+            "type": "oauth",
+            "client": { "mode": "dcr" },
+            "baseScopes": ["openid"]
+          }
+        }
+      }
+    }
+  }
+}

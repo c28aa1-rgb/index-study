@@ -285,3 +285,21 @@ test('keyboard traps in options and reduced motion still reveals card backs', as
   await expect(page.getByRole('button', { name: /Definition: First letter/ })).toBeVisible()
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
+
+
+test('a stale editor keeps its draft and cannot overwrite a newer connector edit', async ({ page }) => {
+  await open(page, '/edit')
+  await page.getByRole('textbox', { name: 'Term', exact: true }).first().fill('My unsaved draft')
+  await page.evaluate(() => {
+    const sets = JSON.parse(localStorage.getItem('di.sets') || '[]')
+    sets[0].cards.push({ id: 'connector-card', term: 'Delta', definition: 'Added through ChatGPT' })
+    sets[0].updated_at = '2026-11-05T12:00:00Z'
+    localStorage.setItem('di.sets', JSON.stringify(sets))
+  })
+  await page.getByRole('button', { name: 'Save changes', exact: true }).click()
+  await expect(page.getByText('This set changed while you were editing.', { exact: false })).toBeVisible()
+  await expect(page.getByRole('textbox', { name: 'Term', exact: true }).first()).toHaveValue('My unsaved draft')
+  const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('di.sets') || '[]')[0])
+  expect(stored.cards).toHaveLength(4)
+  expect(stored.cards[0].term).toBe('Alpha')
+})
