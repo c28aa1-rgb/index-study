@@ -1,50 +1,54 @@
-# Index in ChatGPT
+# Index in ChatGPT on the web
 
-The connector exposes four authenticated tools: find your sets, read a set, create a private set, and add/remove cards. ChatGPT generates card content from notes supplied in the conversation; Index saves the resulting term/definition pairs. No AI API key is needed in Index.
+The active connection is **Index Study Web**, a private ChatGPT Sites plugin. It exposes a connection-status tool and the four existing Index study-set tools: find, read, create a private set, and add/remove cards. ChatGPT generates the cards from notes in the conversation; Index saves them. No AI API key is needed.
 
 ## Hosted pieces
 
-- App and consent UI: https://c28aa1-rgb.github.io/index-study/
-- MCP server (stateless Streamable HTTP): https://wvaouepnnlqlxftrvjpf.supabase.co/functions/v1/index-mcp
-- Protected resource metadata: the MCP URL plus `/.well-known/oauth-protected-resource`
-- Authorization provider: the existing project's Supabase Auth OAuth 2.1 server
-- SQL: `supabase/connector.sql`, applied after `supabase/schema.sql`
-- Edge function: `supabase/functions/index-mcp/`
-- Private plugin: https://chatgpt.com/plugins/plugins_6aeca7c3678c8191a0abb08bc370a2b5
-- Portable private plugin source: `plugin/index-study/`
+- Index app and consent UI: https://c28aa1-rgb.github.io/index-study/
+- Private account-linking Site: https://index-study-web.wiseonyx1.chatgpt.site
+- Site project: `appgprj_6aecbbf6fcf88191ba43f0590cb1e896`
+- Canonical Site-created plugin: `plugin_asdk_app_sites_051e9801d6088191acff41be91c1c138`
+- Site MCP: `https://index-study-web.wiseonyx1.chatgpt.site/mcp`
+- Site source checkout: `integrations/index-chatgpt-web/`, tracked in the Site's separate source repository. Its `.openai/hosting.json` owns that Site identity; the parent GitHub Pages repository ignores this nested checkout.
+- Existing Index capability server: `https://wvaouepnnlqlxftrvjpf.supabase.co/functions/v1/index-mcp`
+- Supabase SQL: `supabase/connector.sql`
 
-## One-time project setup
+## User setup
 
-These settings must be enabled by a signed-in project administrator. The code intentionally rejects access until token audience, live provider consent, a live OAuth session, and Index's grant all match.
+1. Open the private connection Site in a browser. Continue with ChatGPT if asked.
+2. Choose **Link Index account**, sign in with the existing Index Google account, then select **Allow connection** on the Index consent screen.
+3. Return to the Site and confirm **Index account linked**.
+4. In ChatGPT Plugins, open **Personal → Created by you → Index Study Web**. Install or connect if shown. Sites may install it automatically when publishing.
+5. On ChatGPT web, switch to **Work**, start a new chat, type `@`, and select **Index Study Web**. Ask it to create a set from notes or update cards in an existing set.
 
-1. In Supabase **Authentication → Hooks**, add the **Custom Access Token** Postgres hook `public.index_connector_token_hook`. This adds the MCP resource to OAuth access-token audiences while leaving ordinary Google sign-ins unchanged. Supabase has the required execute grant in `connector.sql`.
-2. In **Authentication → OAuth Server**, enable the OAuth server, set **Authorization Path** to `/oauth-consent.html`, and enable **Dynamic Client Registration**. The site's URL remains `https://c28aa1-rgb.github.io/index-study/`. Supabase joins this path to the Site URL; the static page safely bridges `authorization_id` to the app's hash router.
-3. Verify the OAuth discovery URL returns JSON: `https://wvaouepnnlqlxftrvjpf.supabase.co/.well-known/oauth-authorization-server/auth/v1`. Existing ES256 signing keys support OpenID Connect.
-4. In ChatGPT on the web, use an account/workspace with custom MCP write actions enabled, then add the MCP server URL from ChatGPT **Plugins → + → Add custom MCP server**. Choose OAuth and dynamic client registration. Do not paste API keys or browser tokens into ChatGPT. The existing private [Index Study plugin page](https://chatgpt.com/plugins/plugins_6aeca7c3678c8191a0abb08bc370a2b5) currently opens in the desktop app for the user's Plus account.
-5. Connect with Google. Review the real client name and callback address on Index's consent screen, then select **Allow connection** yourself. No automatic consent is performed by the app.
-6. Start a new ChatGPT web conversation, type `@`, select **Index Study**, and ask ChatGPT to make a set from notes. Open its returned Index link, then test adding/removing cards from that set. Disconnect under **Index → Connections** to revoke access.
+The Site is owner-private. Personal Site-hosted plugins cannot currently be shared with other ChatGPT users. This setup is for the owning ChatGPT account; it is not a public, multi-user connector. Access to the Site, its plugin, and the Index account are separate permissions.
 
-ChatGPT controls which accounts and workspaces can add custom MCP servers and use write actions. OpenAI currently documents full custom MCP support on the web for Business, Enterprise, and Edu. Plus does not support these write-enabled MCP actions in web chats. Index create/edit actions therefore need an eligible workspace; this cannot be changed in Index or Supabase. See [OpenAI's current connection guide](https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt) for the latest availability and UI labels.
+The old standalone private plugin (`plugins_6aeca7c3678c8191a0abb08bc370a2b5`) is retired. Its package source has been removed from this repository. Plugin Management reported that it was not installed when removal was requested; deleting a saved plugin definition from “Created by you” is separate from uninstalling it.
 
-Dynamic registration lets clients register but grants no user data access. Each user still needs to sign in and explicitly approve. For a tighter deployment, register the exact ChatGPT client and callback shown by ChatGPT and disable dynamic registration afterward; update the plugin's OAuth client mode accordingly.
+## Account and data boundaries
 
-## Data and permission boundaries
+Sites authenticates the caller before forwarding requests and supplies a Site-scoped user ID. The Site's MCP tools require that identity and only use the encrypted Index credentials stored for that same Site user. No email-based account matching or Supabase service-role key is used.
 
-OAuth access is denied on raw sets, progress, stars, and grant tables. A fixed-operation RPC lives behind an unexposed private schema. Its intentionally privileged implementation checks `auth.uid()`, signed `client_id`, resource audience, current `auth.sessions`, unrevoked `auth.oauth_consents`, and a user-managed Index grant on every call. It only selects/changes rows owned by that user. The Edge Function uses the project's public anon key and the user's OAuth token, never a service-role key.
+Linking uses a dedicated public Supabase OAuth client, a fixed callback URL, authorization code flow with PKCE, one-use state bound to the Site user, and explicit Index consent. Browser mutation routes reject cross-origin requests. Tokens are encrypted with AES-GCM in the Site's D1 database; their key is a Sites runtime secret. Tokens never appear in browser JavaScript, MCP tool output, Git, or the hosting manifest. Refreshes use a per-user lease to prevent concurrent token rotation.
 
-The RPC cannot change visibility, owner, title, or description of an existing set, delete whole sets, read someone else's sets (including public ones), or access study history. Create always uses private visibility. Card IDs and attribution on unchanged cards are preserved. Card removal must leave at least two cards.
+Every study operation still reaches the existing Index MCP server and narrow SQL capability. Those independently validate the signed Index user, OAuth client, resource audience, expiry, live OAuth session, current consent and Index grant, set ownership, card limits, revision, and idempotency key. OAuth is denied raw sets, study progress, stars, and grant-table access. New sets are private. Edits preserve untouched card IDs and require the exact current revision. The tools cannot delete whole sets or change their visibility or owner.
 
-Every write requires a fresh UUID `request_id`. Identical retries return the saved result without changing data twice; reuse with different arguments is rejected. Edits require the exact `updated_at` revision and lock the row. The website also saves existing sets with a revision predicate, so a stale editor cannot overwrite changes made by ChatGPT. Operation receipts are private and are removed when their set, OAuth client, or user is deleted.
+Disconnecting on the Site deletes its encrypted credentials before attempting to sign out the dedicated OAuth session. Disconnecting in Index revokes the grant that every backend call checks. Already running requests may finish; subsequent requests fail. A failure to sign out upstream does not restore deleted Site access.
 
-Disconnect removes Index's permission first (immediate effect on existing tokens), then revokes the provider grant. A provider revocation error is surfaced separately. Tokens are verified against the provider's public signing keys and checked for issuer, expiry, audience, OAuth client and session. Do not add service keys to plugin files or to the client app.
+## Server prerequisites
+
+The existing Supabase project settings remain required and were configured before the Site was built:
+
+- Authentication → Hooks: enabled Postgres Custom Access Token hook `public.index_connector_token_hook`.
+- Authentication → OAuth Server: enabled, authorization path `/oauth-consent.html`, dynamic registration enabled.
+- Site URL: `https://c28aa1-rgb.github.io/index-study/`.
+
+The dedicated Index Study Web OAuth client allows only `https://index-study-web.wiseonyx1.chatgpt.site/oauth/callback`. The bridge requests `openid offline_access` and the existing Index MCP resource. Runtime environment names and rotation limitations are documented in the Site source README.
 
 ## Verification
 
-- `npm test`: transport discovery, authentication rejection, argument validation, size limits and safe error messages.
-- `tests/connector-database.sql`: transaction-only synthetic fixtures proving isolation, creation, precise edits, retained cards, pagination, retries, revision conflicts, cardinality checks, disconnection and normal Google-session compatibility. Run inside BEGIN/ROLLBACK after the connector SQL in a development database, or in a single rollback transaction as part of controlled verification. Never use real account data.
-- `npm run test:e2e`: consent is explicit, denial grants nothing, broken requests fail closed, disconnect ordering, and existing study flows on desktop/mobile.
-- The final real ChatGPT OAuth round trip requires the project settings above and user consent. Unit, mocked-browser, and rollback SQL checks do not replace that final connection test.
+The Site has eight focused tests for anonymous rejection, user isolation, token encryption, cross-origin form rejection, PKCE/state binding and replay, expired state, refresh coordination, local-first disconnect, and revoked upstream access. TypeScript and the production Sites build also pass. Sites publication provisions and discovers the canonical plugin.
 
-## Hosting note
+A complete real-account verification requires the user to finish Index consent, then call the plugin from a fresh ChatGPT Work web conversation. Publication and mocked tests do not prove that final round trip.
 
-GitHub Pages hosts the frontend only. The Supabase Edge Function hosts the MCP server and is deployed with gateway `verify_jwt=false`: public discovery/initialization must be reachable, while its own handler verifies every tool call and the database checks live authorization again. Turning off gateway JWT verification does not make tools anonymous.
+The original backend tests remain under `tests/connector.test.ts`, `tests/connector-database.sql`, and `tests/e2e/connections.spec.ts`. The rollback SQL fixtures use synthetic users and sets only.

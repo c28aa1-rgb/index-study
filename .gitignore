@@ -8,3 +8,4 @@ test-results
 playwright-report
 docs/*.png
 !docs/index-desk.png
+/integrations/index-chatgpt-web/

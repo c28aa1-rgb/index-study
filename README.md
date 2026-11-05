@@ -77,4 +77,4 @@ Design references: `docs/design-system.md`, `docs/design-philosophy.md`, and `do
 
 ## ChatGPT connection
 
-The Index MCP connector can create private sets from notes and add/remove cards in your existing sets. It uses the same Google account, explicit OAuth consent and immediate disconnection. See [setup and permission boundaries](docs/chatgpt-connector.md) for the one-time Supabase settings and final connection test. The server is separate from the GitHub Pages frontend; no AI API key or database service key is included in the plugin.
+The private **Index Study Web** plugin uses ChatGPT Sites to create private sets from notes and add/remove cards in your existing sets from ChatGPT Work on the web. It links the same Index Google account through explicit OAuth consent. See [setup and permission boundaries](docs/chatgpt-connector.md) for the connection Site, source checkout, and final account check. The Site bridge and existing MCP backend are separate from GitHub Pages; no AI API key or database service key is used.

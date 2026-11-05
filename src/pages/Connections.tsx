@@ -5,15 +5,13 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/auth'
 import { ChatGPTMark } from '../components/ChatGPTMark'
 
-const endpoint = 'https://wvaouepnnlqlxftrvjpf.supabase.co/functions/v1/index-mcp'
-const pluginUrl = 'https://chatgpt.com/plugins/plugins_6aeca7c3678c8191a0abb08bc370a2b5'
+const connectionSite = 'https://index-study-web.wiseonyx1.chatgpt.site'
 export default function Connections() {
   const { user } = useAuth()
   const [grants, setGrants] = useState<OAuthGrant[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
-  const [copied, setCopied] = useState(false)
   useEffect(() => {
     let alive = true
     supabase?.auth.oauth.listGrants().then(({ data, error }) => {
@@ -40,53 +38,41 @@ export default function Connections() {
   }
   return <Page className="max-w-3xl pt-10 sm:pt-16">
     <h1 className="desk-heading">Use Index in ChatGPT.</h1>
-    <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-2">Use your Index sets in ChatGPT. Web access depends on your ChatGPT plan and workspace.</p>
+    <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-2">Turn notes into a private study set, or add and remove cards, from a ChatGPT Work conversation on the web.</p>
     <section className="mt-9 overflow-hidden rounded-2xl border border-ink/15 bg-paper" aria-labelledby="chatgpt-title">
       <div className="border-b border-rule bg-desk/60 px-6 py-6 sm:px-8">
         <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-white"><ChatGPTMark className="h-6 w-6" /></span>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink text-white"><ChatGPTMark className="h-6 w-6" /></span>
           <div>
-            <h2 id="chatgpt-title" className="font-display text-2xl font-bold">Connect to ChatGPT</h2>
-          <p className="mt-1 text-sm text-ink-2">Your Index server and account connection are ready.</p>
+            <h2 id="chatgpt-title" className="font-display text-2xl font-bold">Connect with ChatGPT</h2>
+            <p className="mt-1 text-sm text-ink-2">Use the new Index Study Web plugin hosted on ChatGPT Sites.</p>
           </div>
         </div>
-        <a href={pluginUrl} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ink px-5 font-semibold text-white shadow-[0_3px_0_#0a1226] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-margin">
-          <ChatGPTMark /> View Index Study plugin
+        <a href={connectionSite} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-ink px-5 font-semibold text-white shadow-[0_3px_0_#0a1226] transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-margin">
+          <ChatGPTMark /> Connect with ChatGPT
         </a>
       </div>
       <div className="px-6 py-6 sm:px-8">
-        <h3 className="font-display text-lg font-bold">Use Index in a ChatGPT web chat</h3>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-2">The plugin page currently marks your Plus account as desktop-only. ChatGPT does not allow Plus accounts to use custom MCP write actions from web chats. OpenAI currently lists Business, Enterprise, and Edu workspaces for full MCP access. Index can’t change this plan restriction.</p>
+        <h3 className="font-display text-lg font-bold">Set up your web connection</h3>
         <ol className="mt-5 space-y-5">
           <li className="flex gap-4">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marker text-sm font-bold">1</span>
-            <div><p className="font-semibold">Use an eligible ChatGPT web workspace</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Your account or workspace must allow custom MCP apps with write actions. On Plus, use the desktop app for this private plugin.</p></div>
+            <div><p className="font-semibold">Link your Index account</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Open the connection Site above. Continue with ChatGPT if asked, then select <strong>Link Index account</strong>. Sign in with your Index Google account and choose <strong>Allow connection</strong>.</p></div>
           </li>
           <li className="flex gap-4">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marker text-sm font-bold">2</span>
-            <div><p className="font-semibold">Add Index Study in ChatGPT web</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Open <strong>Plugins</strong>, choose <strong>+</strong> → <strong>Add custom MCP server</strong>, and use the server URL below. Select OAuth and dynamic client registration, then create and install the plugin.</p></div>
+            <div><p className="font-semibold">Find Index Study Web in ChatGPT</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Open <a href="https://chatgpt.com/plugins" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">ChatGPT Plugins</a>, then <strong>Personal → Created by you</strong>. Select <strong>Index Study Web</strong> and choose <strong>Install</strong> or <strong>Connect</strong> if shown.</p></div>
           </li>
           <li className="flex gap-4">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marker text-sm font-bold">3</span>
-            <div><p className="font-semibold">Connect your Index account</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Choose <strong>Connect</strong>, sign in with Google, then review the Index permission screen and choose <strong>Allow connection</strong>.</p></div>
-          </li>
-          <li className="flex gap-4">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-marker text-sm font-bold">4</span>
-            <div><p className="font-semibold">Use it in a chat</p><p className="mt-1 text-sm leading-relaxed text-ink-2">Start a new ChatGPT web chat, type <kbd className="rounded border border-rule bg-desk px-1.5 py-0.5 text-xs">@</kbd>, select <strong>Index Study</strong>, and ask it to make or update a set.</p></div>
+            <div><p className="font-semibold">Start a Work chat on the web</p><p className="mt-1 text-sm leading-relaxed text-ink-2">At <strong>chatgpt.com</strong>, switch to <strong>Work</strong> and start a new conversation. Type <kbd className="rounded border border-rule bg-desk px-1.5 py-0.5 text-xs">@</kbd>, select <strong>Index Study Web</strong>, then give it your notes and ask for a set.</p></div>
           </li>
         </ol>
         <div className="mt-6 rounded-xl border-l-4 border-margin bg-desk px-4 py-3 text-sm leading-relaxed text-ink-2">
           Try: <span className="font-semibold text-ink">“Make a study set from these notes”</span>, <span className="font-semibold text-ink">“Add these terms to my biology set”</span>, or <span className="font-semibold text-ink">“Remove this card from my set.”</span>
         </div>
-        <details className="mt-5 border-t border-rule pt-4">
-          <summary className="cursor-pointer font-semibold underline decoration-rule underline-offset-4">Server address and manual setup</summary>
-          <p className="mt-3 text-sm leading-relaxed text-ink-2">In ChatGPT on the web, open <strong>Plugins</strong>, choose <strong>+</strong>, then <strong>Add custom MCP server</strong>. Name it <strong>Index Study</strong>, paste the URL below, choose OAuth with dynamic client registration and scope <code>openid</code>, then create and install it. This requires an eligible workspace that supports MCP write actions.</p>
-          <label className="mt-4 block text-sm font-semibold" htmlFor="connector-url">Index server URL</label>
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-            <input id="connector-url" className="min-w-0 flex-1 rounded-lg border border-rule bg-desk px-3 py-3 text-xs" readOnly value={endpoint} onFocus={e => e.target.select()} />
-            <Button tone="paper" size="sm" onClick={async () => { try { await navigator.clipboard.writeText(endpoint); setCopied(true) } catch { setError('Select and copy the server URL above.') } }}>{copied ? 'Copied' : 'Copy URL'}</Button>
-          </div>
-        </details>
+        <p className="mt-5 text-xs leading-relaxed text-ink-3">This Site-hosted connection is private to its owner’s ChatGPT account. Other people need their own connection; personal Site plugins cannot currently be shared. Account linking is complete when the Site says “Index account linked.”</p>
+        <p className="mt-3 text-xs leading-relaxed text-ink-3">Only your own sets are available. New sets are private. Disconnect below or on the connection Site to stop access.</p>
       </div>
     </section>
     <section className="mt-10" aria-labelledby="connected-title">
