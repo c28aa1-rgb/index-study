@@ -5,7 +5,6 @@ import { snap } from '../lib/motion'
 import { supabase } from '../lib/supabase'
 import { toast } from './Toast'
 import { SoundToggle } from './SoundToggle'
-import { ChatGPTMark } from './ChatGPTMark'
 
 export function Logo() {
   return (
@@ -35,7 +34,6 @@ export function Logo() {
 const links = [
   { to: '/', label: 'Library' },
   { to: '/explore', label: 'Explore' },
-  { to: '/connections', label: 'Connect with ChatGPT' },
 ]
 
 export function Nav() {
@@ -67,7 +65,6 @@ export function Nav() {
                       transition={snap}
                     />
                   )}
-                  {l.to === '/connections' && <ChatGPTMark className="mr-1.5 inline-block h-4 w-4 align-[-3px]" />}
                   {l.label}
                 </>
               )}
@@ -117,7 +114,7 @@ export function Nav() {
               `rounded-lg px-3 py-1 text-sm font-semibold ${isActive ? 'bg-ink text-white' : 'text-ink-3'}`
             }
           >
-            <span className="whitespace-nowrap">{l.to === '/connections' && <ChatGPTMark className="mr-1 inline-block h-4 w-4 align-[-3px]" />}{l.label}</span>
+            {l.label}
           </NavLink>
         ))}
       </nav>

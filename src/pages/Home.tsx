@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Button, Empty, Page, Spinner } from '../components/ui'
 import { SetTile } from '../components/SetTile'
-import { ChatGPTMark } from '../components/ChatGPTMark'
 import { useAuth } from '../lib/auth'
 import { flip } from '../lib/motion'
 import { mySets } from '../lib/store'
@@ -138,9 +137,6 @@ export default function Home() {
                 <Button size="lg" tone="paper" onClick={() => nav('/create?import=1')}>
                   Import notes
                 </Button>
-                <Link to="/connections" className="inline-flex h-14 items-center justify-center gap-2 rounded-xl border-2 border-ink/15 bg-paper px-4 text-sm font-semibold text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-margin">
-                  <ChatGPTMark /> Connect to ChatGPT
-                </Link>
               </div>
             </div>
             <CardStack />
@@ -189,9 +185,6 @@ export default function Home() {
               <Button tone="paper" onClick={() => nav('/create?import=1')}>
                 Import notes
               </Button>
-              <Link to="/connections" className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border-2 border-ink/15 bg-paper px-4 text-sm font-semibold text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-margin">
-                <ChatGPTMark /> Connect to ChatGPT
-              </Link>
             </div>
           </div>
           <div className="mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-ink/15 pb-5">
