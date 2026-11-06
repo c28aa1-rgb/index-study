@@ -34,6 +34,7 @@ export function Logo() {
 const links = [
   { to: '/', label: 'Library' },
   { to: '/explore', label: 'Explore' },
+  { to: '/chatgpt-setup', label: 'ChatGPT setup' },
 ]
 
 export function Nav() {

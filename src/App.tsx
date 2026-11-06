@@ -18,6 +18,7 @@ const Review = lazy(() => import('./pages/Review'))
 const Shared = lazy(() => import('./pages/Shared'))
 const AuthPage = lazy(() => import('./pages/Auth'))
 const Connections = lazy(() => import('./pages/Connections'))
+const ChatGPTSetup = lazy(() => import('./pages/ChatGPTSetup'))
 const OAuthConsent = lazy(() => import('./pages/OAuthConsent'))
 
 export default function App() {
@@ -29,7 +30,7 @@ export default function App() {
         <Spinner />
       </Page>
     )
-  if (loc.pathname !== '/auth' && !user) {
+  if (!['/auth', '/chatgpt-setup'].includes(loc.pathname) && !user) {
     return <Navigate to={`/auth?next=${encodeURIComponent(loc.pathname + loc.search)}`} replace />
   }
   return (
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/shared/:code" element={<Shared />} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/connections" element={<Connections />} />
+            <Route path="/chatgpt-setup" element={<ChatGPTSetup />} />
             <Route path="/connect/authorize" element={<OAuthConsent />} />
             <Route path="*" element={<Home />} />
           </Routes>
